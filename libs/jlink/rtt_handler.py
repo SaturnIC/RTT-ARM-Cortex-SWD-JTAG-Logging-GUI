@@ -6,6 +6,7 @@ import time
 class RTTHandler:
     def __init__(self):
         self._jlink = pylink.JLink()
+        self._supported_mcu_list = [self._jlink.supported_device(i).name.lower() for i in range(self._jlink.num_supported_devices())]
         self._log_queue = queue.Queue()
         self._connected = False
         self._rtt_thread = None
@@ -62,6 +63,15 @@ class RTTHandler:
                 time.sleep(0.1)
             except pylink.JLinkException:
                 break
+
+    def get_supported_mcus(self):
+        """
+        Get the list of supported MCUs.
+
+        Returns:
+            List of MCU strings.
+        """
+        return self._supported_mcu_list
 
     @property
     def is_connected(self):
