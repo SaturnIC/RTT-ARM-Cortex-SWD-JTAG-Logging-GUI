@@ -10,19 +10,6 @@ from libs.log.log_view import LogView
 # constants
 FILTER_APPLICATION_WAIT_TIME_s = 1
 
-# Colors
-COLOR_DARK_GREY = '#181818'
-COLOR_LIGHT_GREY = '#424242'
-COLOR_VLIGHT_GREY = '#929292'
-COLOR_BLACK = '#000000'
-COLOR_WHITE = '#FFFFFF'
-COLOR_YELLOW = '#FFF703'
-COLOR_RED = 'orangered'
-COLOR_BLUE = 'dodgerblue'
-COLOR_GREEN = 'springgreen'
-COLOR_HIGHLIGHT = 'aquamarine'
-COLOR_BACKGROUND = 'black'
-
 class RTTViewer:
     def __init__(self):
         # Initialize RTT Handler
@@ -33,7 +20,7 @@ class RTTViewer:
 
         # Create layout with new filter, highlight, and pause elements
         self._layout = [
-            [sg.Text('Segger RTT GUI', size=(30, 1), justification='center')],
+            [sg.Text('Python RTT GUI', size=(30, 1), justification='center')],
             [sg.Column([
                 [sg.Text('MCU Chip Name:'),
                  sg.Combo(self.supported_mcu_list, default_value='STM32F427II',

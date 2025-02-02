@@ -84,24 +84,24 @@ def create_update_log_text_closure(log_view):
             if old_filter_string != "":
                 old_filter_string = ""
                 last_applied_filter_string = ""
-                log_view.set_default_color_for_filter_log_lines_input("-FILTER-")
+                log_view.set_default_color_for_input_widget("-FILTER-")
         else:
             current_time = time.time()
             if filter_string != old_filter_string:
                 old_filter_string = filter_string
                 last_filter_change_time = current_time
-                log_view.highlight_filter_log_lines_input("-FILTER-")
+                log_view.set_highlight_color_for_input_widget("-FILTER-")
                 filter_input_active = True
             if (last_applied_filter_string != filter_string) and \
                (current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
                 last_applied_filter_string = filter_string
                 filtered_text = _apply_text_filter(last_applied_filter_string, all_text)
-                log_view.set_default_color_for_filter_log_lines_input("-FILTER-")
+                log_view.set_default_color_for_input_widget("-FILTER-")
                 filter_input_active = False
             else:
                 if (filter_input_active and
                     current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
-                    log_view.set_default_color_for_filter_log_lines_input("-FILTER-")
+                    log_view.set_default_color_for_input_widget("-FILTER-")
                     filter_input_active = False
                 if new_text:
                     filtered_text = old_filtered_text + _apply_text_filter(last_applied_filter_string, new_text)
@@ -164,7 +164,7 @@ def create_update_log_text_closure(log_view):
                 if highlight_string != old_highlight_string:
                     # filter string changed -> update filter application time + color highlight input active
                     last_highlight_change_time = current_time
-                    log_view.highlight_filter_log_lines_input("-HIGHLIGHT-")
+                    log_view.set_highlight_color_for_input_widget("-HIGHLIGHT-")
                     highlight_input_active = True
                 # use new highlight sting after timeout expired
                 if ((current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s)
@@ -172,7 +172,7 @@ def create_update_log_text_closure(log_view):
                     # highlight string changed and change wait timeout expired -> redraw complete log + disable active color for highlight input
                     last_applied_highlight_string = highlight_string
                     log_view.color_highlighted_text(filtered_text, last_applied_highlight_string, append=False)
-                    log_view.set_default_color_for_filter_log_lines_input("-HIGHLIGHT-")
+                    log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
                     highlight_input_active = False
                 else:
                     # highlight strings
@@ -210,7 +210,7 @@ def create_update_log_text_closure(log_view):
             _highlight_text(log_view.get_highlight_string(), filtered_text)
         else:
             # highlight string empty
-            log_view.set_default_color_for_filter_log_lines_input("-HIGHLIGHT-")
+            log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
             log_view.update_log(filtered_text, append=False)
         old_raw_log_text = raw_text_after_freezing
         old_filtered_text = filtered_text
