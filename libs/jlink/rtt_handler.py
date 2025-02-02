@@ -60,7 +60,7 @@ class RTTHandler:
                 data = self._jlink.rtt_read(0, 1024)
                 if data:
                     byte_string = bytes(data)
-                    latin_string = byte_string.decode('latin-1')
+                    latin_string = byte_string[2:].decode('latin-1') # first two bytes used in header?
                     self._log_queue.put(latin_string)
                 time.sleep(0.1)
             except pylink.JLinkException:

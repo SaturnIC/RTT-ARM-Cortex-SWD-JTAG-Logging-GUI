@@ -2,9 +2,9 @@ import PySimpleGUI as sg
 import time
 import queue
 import time
+import libs.log.log_controller as log_controller
 from datetime import datetime
 from libs.jlink.rtt_handler import RTTHandler
-from libs.log.log_controller import create_update_log_text_closure, get_last_log_gui_filter_update_date, GUI_MINIMUM_REFRESH_INTERVAL_s
 from libs.log.log_view import LogView
 
 # constants
@@ -76,7 +76,7 @@ class RTTViewer:
         )
 
         # Create update closure
-        self.update_log_text = create_update_log_text_closure(self.log_view)
+        self.update_log_text = log_controller.create_update_log_text_closure(self.log_view)
 
     def _update_gui_status(self, connected):
         self._window['-STATUS-'].update(
@@ -96,7 +96,7 @@ class RTTViewer:
                 pass
 
         # call log gui update at least once per second
-        if (datetime.now() - get_last_log_gui_filter_update_date()).total_seconds() > GUI_MINIMUM_REFRESH_INTERVAL_s:
+        if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
             self.update_log_text("")
 
     def _filter_mcu_list(self, filter_string):
@@ -140,7 +140,8 @@ class RTTViewer:
                     self._rtt_handler.disconnect()
                     self._update_gui_status(False)
                 if event == '-CLEAR-':
-                    self._window['-LOG-'].update('')
+                    self._window['-LOG-'].update('', append=False)
+                    log_controller.clear_logs()
                 if event in ('-FILTER-', '-HIGHLIGHT-'):
                     # Update the log display when filter or highlight changes
                     self.update_log_text("")

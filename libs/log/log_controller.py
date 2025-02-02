@@ -6,6 +6,9 @@ import traceback
 last_filter_change_time = 0
 last_highlight_change_time = 0
 last_log_gui_filter_update_date = datetime.datetime.now()
+old_raw_log_text = ""
+old_filtered_text = ""
+old_text_after_freezing = ""
 
 # Constants
 FILTER_APPLICATION_WAIT_TIME_s = 0.5
@@ -22,9 +25,6 @@ def create_update_log_text_closure(log_view):
     old_highlight_string = ""
     last_applied_highlight_string = ""
     highlight_input_active = False
-    old_raw_log_text = ""
-    old_filtered_text = ""
-    old_text_after_freezing = ""
     old_pause_text_state = False
 
     def _apply_text_filter(filter_str, unfiltered_content):
@@ -44,7 +44,7 @@ def create_update_log_text_closure(log_view):
         """
         Handle freezing of log text
         """
-        nonlocal old_text_after_freezing
+        global old_text_after_freezing
         nonlocal old_pause_text_state
         if pause_text_state != old_pause_text_state:
             ### Pause state changed
@@ -110,7 +110,7 @@ def create_update_log_text_closure(log_view):
         return filtered_text
 
     def _clear_log_text():
-        nonlocal old_text_after_freezing
+        global old_text_after_freezing
         filtered_text = ""
         old_text_after_freezing = ""
         log_view.update_log('', append=False)
@@ -121,7 +121,7 @@ def create_update_log_text_closure(log_view):
         Highlight matching text in the log
         """
         nonlocal old_highlight_string
-        nonlocal old_filtered_text
+        global old_filtered_text
         nonlocal last_applied_highlight_string
         nonlocal highlight_input_active
         global last_highlight_change_time
@@ -198,8 +198,8 @@ def create_update_log_text_closure(log_view):
         """
         Main function to update log text with filtering and highlighting
         """
-        nonlocal old_raw_log_text
-        nonlocal old_filtered_text
+        global old_raw_log_text
+        global old_filtered_text
         global last_log_gui_filter_update_date
         current_pause_state = log_view.is_log_frozen()
         raw_log_text = old_raw_log_text + new_text
@@ -220,3 +220,12 @@ def create_update_log_text_closure(log_view):
 
 def get_last_log_gui_filter_update_date():
     return last_log_gui_filter_update_date
+
+def clear_logs():
+    global old_raw_log_text
+    global old_filtered_text
+    global old_text_after_freezing
+
+    old_raw_log_text = ""
+    old_filtered_text = ""
+    old_text_after_freezing = ""

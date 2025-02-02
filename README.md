@@ -23,7 +23,7 @@ This project provides a simple and intuitive interface for connecting to and mon
 ### Use RTTViewer in Embedded Target
 - RTT source code is available in the J-Link Software and Documentation Pack,
   under the following code `JLink/Samples/RTT`
-- Include this code into your embedded project and use the following function to print log
+- Include this code into your embedded project and use the SEGGER_RTT_printf function to print log
   messages to the JLink host:
   ```C
   # include SEGGER_RTT.h
