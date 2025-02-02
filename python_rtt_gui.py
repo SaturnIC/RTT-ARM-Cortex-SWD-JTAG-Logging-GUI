@@ -2,8 +2,9 @@ import PySimpleGUI as sg
 import time
 import queue
 import time
+from datetime import datetime
 from libs.jlink.rtt_handler import RTTHandler
-from libs.log.log_controller import createUpdateLogTextClosure
+from libs.log.log_controller import create_update_log_text_closure, get_last_log_gui_filter_update_date, GUI_MINIMUM_REFRESH_INTERVAL_s
 from libs.log.log_view import LogView
 
 # constants
@@ -30,7 +31,7 @@ class RTTViewer:
         # GUI setup
         sg.theme('Dark Gray 13')
 
-        # Create layout with new filter, highlight, and freeze elements
+        # Create layout with new filter, highlight, and pause elements
         self._layout = [
             [sg.Text('Segger RTT GUI', size=(30, 1), justification='center')],
             [sg.Column([
@@ -41,10 +42,10 @@ class RTTViewer:
             [sg.Output(size=(80, 20), key='-LOG-', font=('Consolas', 10))],
             [sg.Column([
                 [sg.Text('Filter:'),
-                 sg.Input(key='-FILTER-', size=(20, 1)),
+                 sg.Input(key='-FILTER-', size=(20, 1), enable_events=True),
                  sg.Text('Highlight:'),
-                 sg.Input(key='-HIGHLIGHT-', size=(20, 1)),
-                 sg.Button('Freeze', key='-FREEZE-', disabled=False)]
+                 sg.Input(key='-HIGHLIGHT-', size=(20, 1), enable_events=True),
+                 sg.Button('Pause', key='-PAUSE-', disabled=False)]
             ])],
             [sg.Column([
                 [sg.Button('Connect', key='-CONNECT-'),
@@ -67,15 +68,15 @@ class RTTViewer:
 
         # Create LogView instance
         self.log_view = LogView(
-            logWidget=self._window['-LOG-'],
-            filterWidget=self._window['-FILTER-'],
-            highlightWidget=self._window['-HIGHLIGHT-'],
-            freezeButton=self._window['-FREEZE-'],
+            log_widget=self._window['-LOG-'],
+            filter_widget=self._window['-FILTER-'],
+            highlight_widget=self._window['-HIGHLIGHT-'],
+            pause_button=self._window['-PAUSE-'],
             window=self._window
         )
 
         # Create update closure
-        self.update_log_text = createUpdateLogTextClosure(self.log_view)
+        self.update_log_text = create_update_log_text_closure(self.log_view)
 
     def _update_gui_status(self, connected):
         self._window['-STATUS-'].update(
@@ -83,7 +84,7 @@ class RTTViewer:
         )
         self._window['-CONNECT-'].update(disabled=connected)
         self._window['-DISCONNECT-'].update(disabled=not connected)
-        self._window['-FREEZE-'].update(disabled=not connected)
+        #self._window['-PAUSE-'].update(disabled=not connected)
 
     def _process_log_queue(self):
         while not self._rtt_handler.log_queue.empty():
@@ -94,6 +95,10 @@ class RTTViewer:
             except queue.Empty:
                 pass
 
+        # call log gui update at least once per second
+        if (datetime.now() - get_last_log_gui_filter_update_date()).total_seconds() > GUI_MINIMUM_REFRESH_INTERVAL_s:
+            self.update_log_text("")
+
     def _filter_mcu_list(self, filter_string):
         if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
             input_text = filter_string.lower()
@@ -102,17 +107,20 @@ class RTTViewer:
             self._window['-MCU-'].update(values=filtered)
 
     def run(self):
+        self.update_log_text('')
+
         try:
+            # GUI event loop
             while True:
                 time.sleep(0.001)
+
                 # Check MCU filter
                 if self.mcu_filter_string != "":
                     if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
                         self._filter_mcu_list(self.mcu_filter_string)
+
                 # Check events
                 event, values = self._window.read(timeout=100)
-                if event == '__TIMEOUT__':
-                    continue
                 if event == sg.WIN_CLOSED:
                     break
                 if event == '-MCU-':
@@ -124,7 +132,7 @@ class RTTViewer:
                 if event == '-CONNECT-':
                     try:
                         selected_mcu = self._window['-MCU-'].get()
-                        if self._rtt_handler.connect(selected_mcu, print_function=self._append_to_log):
+                        if self._rtt_handler.connect(selected_mcu, print_function=self.update_log_text):
                             self._update_gui_status(True)
                     except Exception as e:
                         sg.popup_error(str(e))
@@ -135,23 +143,18 @@ class RTTViewer:
                     self._window['-LOG-'].update('')
                 if event in ('-FILTER-', '-HIGHLIGHT-'):
                     # Update the log display when filter or highlight changes
-                    if self._window['-FREEZE-'].GetText()=="Unfreeze":
-                        self._window['-FREEZE-'].update("Freeze", button_color = (COLOR_WHITE, COLOR_LIGHT_GREY))
-                    else:
-                        self._window['-FREEZE-'].update("Unfreeze", button_color = (COLOR_WHITE, COLOR_BLUE))
-                if event == '-FREEZE-':
-                    # Toggle freeze state
-                    current_text = self._window['-FREEZE-'].GetText()
-                    new_text = 'Unfreeze' if current_text == 'Freeze' else 'Freeze'
-                    self._window['-FREEZE-'].update(new_text)
+                    self.update_log_text("")
+                if event == '-PAUSE-':
+                    # Toggle pause state
+                    current_text = self._window['-PAUSE-'].GetText()
+                    new_text = 'Unpause' if current_text == 'Pause' else 'Pause'
+                    self._window['-PAUSE-'].update(new_text)
+
                 # Update log
                 self._process_log_queue()
         finally:
             self._rtt_handler.disconnect()
             self._window.close()
-
-    def _append_to_log(self, message):
-        self._window['-LOG-'].update(message, append=True)
 
 if __name__ == "__main__":
     viewer = RTTViewer()

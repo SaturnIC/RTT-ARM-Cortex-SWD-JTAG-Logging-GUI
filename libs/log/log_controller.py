@@ -3,197 +3,220 @@ import time
 import traceback
 
 # Global variables to track the last log filter and highlight change times
-lastFilterChangeTime = 0
-lastHighlightChangeTime = 0
-lastLogGuiFilterUpdateDate = datetime.datetime.now()
+last_filter_change_time = 0
+last_highlight_change_time = 0
+last_log_gui_filter_update_date = datetime.datetime.now()
 
 # Constants
 FILTER_APPLICATION_WAIT_TIME_s = 0.5
 GUI_MINIMUM_REFRESH_INTERVAL_s = 0.5
 
-def createUpdateLogTextClosure(logView):
+def create_update_log_text_closure(log_view):
     """
     Create the update log text closure by providing the widgets
     """
     # Store previous data for comparison
-    oldFilterString = ""
-    lastAppliedFilterString = ""
-    filterInputActive = False
-    oldHighlightString = ""
-    lastAppliedHighlightString = ""
-    highlightInputActive = False
-    oldRawLogText = ""
-    oldFilteredText = ""
-    oldTextAfterFreezing = ""
-    oldFreezeTextState = False
+    old_filter_string = ""
+    last_applied_filter_string = ""
+    filter_input_active = False
+    old_highlight_string = ""
+    last_applied_highlight_string = ""
+    highlight_input_active = False
+    old_raw_log_text = ""
+    old_filtered_text = ""
+    old_text_after_freezing = ""
+    old_pause_text_state = False
 
-    def _applyTextFilter(filterStr, unfilteredContent):
+    def _apply_text_filter(filter_str, unfiltered_content):
         """
         Text log filter function
         """
-        filteredLines = ""
-        if filterStr:
-            for line in unfilteredContent.split('\n'):
-                if filterStr.lower() in line.lower():
-                    filteredLines += line + '\n'
+        filtered_lines = ""
+        if filter_str:
+            for line in unfiltered_content.split('\n'):
+                if filter_str.lower() in line.lower():
+                    filtered_lines += line + '\n'
         else:
-            filteredLines = unfilteredContent
-        return filteredLines
+            filtered_lines = unfiltered_content
+        return filtered_lines
 
-    def _handleFreezing(rawLogText, newText, freezeTextState):
+    def _handle_freezing(raw_log_text, new_text, pause_text_state):
         """
         Handle freezing of log text
         """
-        nonlocal oldTextAfterFreezing
-        nonlocal oldFreezeTextState
-        if freezeTextState != oldFreezeTextState:
-            ### Freeze state changed
-            if not freezeTextState:
-                # Freeze released
-                rawTextAfterFreezing = rawLogText
-                newTextF = rawTextAfterFreezing[len(oldTextAfterFreezing):]
-                oldFreezeTextState = False
+        nonlocal old_text_after_freezing
+        nonlocal old_pause_text_state
+        if pause_text_state != old_pause_text_state:
+            ### Pause state changed
+            if not pause_text_state:
+                # Pause released
+                raw_text_after_freezing = raw_log_text
+                new_text_f = raw_text_after_freezing[len(old_text_after_freezing):]
+                old_pause_text_state = False
             else:
-                # Freeze pressed
-                rawTextAfterFreezing = rawLogText
-                oldFreezeTextState = True
-                oldTextAfterFreezing = rawLogText
-                newTextF = newText
+                # Pause pressed
+                raw_text_after_freezing = raw_log_text
+                old_pause_text_state = True
+                old_text_after_freezing = raw_log_text
+                new_text_f = new_text
         else:
-            ### Freeze state stays the same
-            if not freezeTextState:
+            ### Pause state stays the same
+            if not pause_text_state:
                 # Text not frozen
-                rawTextAfterFreezing = rawLogText
-                newTextF = newText
+                raw_text_after_freezing = raw_log_text
+                new_text_f = new_text
             else:
                 # Text frozen
-                rawTextAfterFreezing = oldTextAfterFreezing
-                newTextF = ""
-        return rawTextAfterFreezing, newTextF
+                raw_text_after_freezing = old_text_after_freezing
+                new_text_f = ""
+        return raw_text_after_freezing, new_text_f
 
-    def _handleFiltering(allText, newText, oldFilteredText, filterString):
+    def _handle_filtering(all_text, new_text, old_filtered_text, filter_string):
         """
         Handle filtering of log text
         """
-        nonlocal oldFilterString
-        nonlocal lastAppliedFilterString
-        nonlocal filterInputActive
-        global lastFilterChangeTime
-
-        if filterString == "":
-            filteredText = allText
-            if oldFilterString != "":
-                oldFilterString = ""
-                lastAppliedFilterString = ""
-                logView.setDefaultColorForFilterLogLinesInput("-FILTER-")
+        nonlocal old_filter_string
+        nonlocal last_applied_filter_string
+        nonlocal filter_input_active
+        global last_filter_change_time
+        if filter_string == "":
+            filtered_text = all_text
+            if old_filter_string != "":
+                old_filter_string = ""
+                last_applied_filter_string = ""
+                log_view.set_default_color_for_filter_log_lines_input("-FILTER-")
         else:
             current_time = time.time()
-            if filterString != oldFilterString:
-                oldFilterString = filterString
-                lastFilterChangeTime = current_time
-                logView.highlightFilterLogLinesInput("-FILTER-")
-                filterInputActive = True
-            if (lastAppliedFilterString != filterString) and \
-               (current_time - lastFilterChangeTime > FILTER_APPLICATION_WAIT_TIME_s):
-                lastAppliedFilterString = filterString
-                filteredText = _applyTextFilter(lastAppliedFilterString, allText)
-                logView.setDefaultColorForFilterLogLinesInput("-FILTER-")
-                filterInputActive = False
+            if filter_string != old_filter_string:
+                old_filter_string = filter_string
+                last_filter_change_time = current_time
+                log_view.highlight_filter_log_lines_input("-FILTER-")
+                filter_input_active = True
+            if (last_applied_filter_string != filter_string) and \
+               (current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
+                last_applied_filter_string = filter_string
+                filtered_text = _apply_text_filter(last_applied_filter_string, all_text)
+                log_view.set_default_color_for_filter_log_lines_input("-FILTER-")
+                filter_input_active = False
             else:
-                if (filterInputActive and
-                    current_time - lastFilterChangeTime > FILTER_APPLICATION_WAIT_TIME_s):
-                    logView.setDefaultColorForFilterLogLinesInput("-FILTER-")
-                    filterInputActive = False
-                if newText:
-                    filteredText = oldFilteredText + _applyTextFilter(lastAppliedFilterString, newText)
+                if (filter_input_active and
+                    current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
+                    log_view.set_default_color_for_filter_log_lines_input("-FILTER-")
+                    filter_input_active = False
+                if new_text:
+                    filtered_text = old_filtered_text + _apply_text_filter(last_applied_filter_string, new_text)
                 else:
-                    filteredText = oldFilteredText
-        return filteredText
+                    filtered_text = old_filtered_text
+        return filtered_text
 
-    def _clearLogText():
-        nonlocal oldTextAfterFreezing
-        filteredText = ""
-        oldTextAfterFreezing = ""
-        logView.updateLog('')
-        return filteredText
+    def _clear_log_text():
+        nonlocal old_text_after_freezing
+        filtered_text = ""
+        old_text_after_freezing = ""
+        log_view.update_log('', append=False)
+        return filtered_text
 
-    def _highlightText(highlightString, filteredText):
+    def _highlight_text(highlight_string, filtered_text):
         """
         Highlight matching text in the log
         """
-        nonlocal oldHighlightString
-        nonlocal oldFilteredText
-        nonlocal lastAppliedHighlightString
-        nonlocal highlightInputActive
-        global lastHighlightChangeTime
-
-        if filteredText == "":
-            logView.updateLog("")
-            oldFilteredText = filteredText
+        nonlocal old_highlight_string
+        nonlocal old_filtered_text
+        nonlocal last_applied_highlight_string
+        nonlocal highlight_input_active
+        global last_highlight_change_time
+        if filtered_text == "":
+            log_view.update_log("", append=False)
+            old_filtered_text = filtered_text
         else:
-            if highlightString == "":
-                if highlightString == oldHighlightString:
-                    if filteredText != oldFilteredText:
-                        logView.updateLog(filteredText)
-                        oldFilteredText = filteredText
-                else:
-                    logView.updateLog(filteredText)
-                    oldFilteredText = filteredText
-                    logView.setDefaultColorForFilterLogLinesInput("-HIGHLIGHT-")
-                    lastAppliedHighlightString = ""
-            else:
-                current_time = time.time()
-                if highlightString != oldHighlightString:
-                    lastHighlightChangeTime = current_time
-                    logView.highlightFilterLogLinesInput("-HIGHLIGHT-")
-                    highlightInputActive = True
-                if (lastAppliedHighlightString != highlightString) and \
-                   (current_time - lastHighlightChangeTime > FILTER_APPLICATION_WAIT_TIME_s):
-                    logView.updateLog('')
-                    lastAppliedHighlightString = highlightString
-                    logView.colorHighlightedText(filteredText, lastAppliedHighlightString)
-                    logView.setDefaultColorForFilterLogLinesInput("-HIGHLIGHT-")
-                    highlightInputActive = False
-                else:
-                    if (highlightInputActive and
-                        current_time - lastHighlightChangeTime > FILTER_APPLICATION_WAIT_TIME_s):
-                        logView.setDefaultColorForFilterLogLinesInput("-HIGHLIGHT-")
-                        highlightInputActive = False
-                    if lastAppliedHighlightString == "":
-                        logView.updateLog(filteredText)
-                        oldFilteredText = filteredText
-                    elif len(filteredText) > len(oldFilteredText):
-                        if filteredText[:len(oldFilteredText)] == oldFilteredText:
-                            newText = filteredText[len(oldFilteredText):]
-                            logView.colorHighlightedText(newText, lastAppliedHighlightString)
+            # filtered text is not empty
+            if highlight_string == "":
+                # highlight string is empty
+                if highlight_string == old_highlight_string:
+                    # highlight string didn't change
+                    if filtered_text != old_filtered_text:
+                        # highlight strings
+                        if len(filtered_text) > len(old_filtered_text):
+                            # new text text is larger than old filtered text
+                            if filtered_text[:len(old_filtered_text)] == old_filtered_text:
+                                # new old text is the old filtered text and some new text -> append only new text
+                                new_text = filtered_text[len(old_filtered_text):]
+                                log_view.update_log(new_text, append=True)
+                            else:
+                                # new text is not an extension of old text -> draw everything again
+                                log_view.update_log(filtered_text, append=False)
+                        elif len(filtered_text) == len(old_filtered_text):
+                            # nothing to do
+                            pass
                         else:
-                            logView.colorHighlightedText(filteredText, lastAppliedHighlightString)
-                    else:
-                        logView.colorHighlightedText(filteredText, lastAppliedHighlightString)
-                oldFilteredText = filteredText
-        oldHighlightString = highlightString
+                            # text is different from old text -> draw everything again
+                            log_view.update_log(filtered_text, append=False)
+                else:
+                    # new empty highlight text -> draw all text again, disable color in input text field
+                    log_view.update_log(filtered_text, append=False)
+                    old_filtered_text = filtered_text
+                    last_applied_highlight_string = ""
+            else:
+                # highlight string is not empty
+                current_time = time.time()
 
-    def updateLogText(data):
+                # handle highlight timeout
+                if highlight_string != old_highlight_string:
+                    # filter string changed -> update filter application time + color highlight input active
+                    last_highlight_change_time = current_time
+                    log_view.highlight_filter_log_lines_input("-HIGHLIGHT-")
+                    highlight_input_active = True
+                # use new highlight sting after timeout expired
+                if ((current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s)
+                    and (last_applied_highlight_string != highlight_string)):
+                    # highlight string changed and change wait timeout expired -> redraw complete log + disable active color for highlight input
+                    last_applied_highlight_string = highlight_string
+                    log_view.color_highlighted_text(filtered_text, last_applied_highlight_string, append=False)
+                    log_view.set_default_color_for_filter_log_lines_input("-HIGHLIGHT-")
+                    highlight_input_active = False
+                else:
+                    # highlight strings
+                    if len(filtered_text) > len(old_filtered_text):
+                        # new text text is larger than old filtered text
+                        if filtered_text[:len(old_filtered_text)] == old_filtered_text:
+                            # new filtered text is the old filtered text and some new filtered text -> append only new filtered text
+                            new_text = filtered_text[len(old_filtered_text):]
+                            log_view.color_highlighted_text(new_text, last_applied_highlight_string, append=True)
+                        else:
+                            # new filtered text is not an extension of old filtered text -> draw everything again
+                            log_view.color_highlighted_text(filtered_text, last_applied_highlight_string, append=False)
+                    elif len(filtered_text) == len(old_filtered_text):
+                        # nothing to do
+                        pass
+                    else:
+                        # filtered text is different from old filtered text -> draw everything again
+                        log_view.color_highlighted_text(filtered_text, last_applied_highlight_string, append=False)
+                old_filtered_text = filtered_text
+        old_highlight_string = highlight_string
+
+    def update_log_text(new_text):
         """
         Main function to update log text with filtering and highlighting
         """
-        nonlocal oldRawLogText
-        nonlocal oldFilteredText
-
-        currentFreezeState = logView.isLogFrozen()
-        rawLogText = oldRawLogText + data
-        freezeTextState = currentFreezeState
-
-        rawTextAfterFreezing, newText = _handleFreezing(rawLogText, data, freezeTextState)
-
-        filteredText = _handleFiltering(rawTextAfterFreezing, newText, oldFilteredText, logView.getFilterString())
-
-        if logView.getHighlightString() != "":
-            _highlightText(logView.getHighlightString(), filteredText)
+        nonlocal old_raw_log_text
+        nonlocal old_filtered_text
+        global last_log_gui_filter_update_date
+        current_pause_state = log_view.is_log_frozen()
+        raw_log_text = old_raw_log_text + new_text
+        raw_text_after_freezing, new_text = _handle_freezing(raw_log_text, new_text, current_pause_state)
+        filtered_text = _handle_filtering(raw_text_after_freezing, new_text, old_filtered_text, log_view.get_filter_string())
+        if log_view.get_highlight_string() != "":
+            # highlight string empty
+            _highlight_text(log_view.get_highlight_string(), filtered_text)
         else:
-            logView.updateLog(filteredText)
+            # highlight string empty
+            log_view.set_default_color_for_filter_log_lines_input("-HIGHLIGHT-")
+            log_view.update_log(filtered_text, append=False)
+        old_raw_log_text = raw_text_after_freezing
+        old_filtered_text = filtered_text
+        last_log_gui_filter_update_date = datetime.datetime.now()
 
-        oldRawLogText = rawTextAfterFreezing
-        oldFilteredText = filteredText
+    return update_log_text
 
-    return updateLogText
+def get_last_log_gui_filter_update_date():
+    return last_log_gui_filter_update_date

@@ -14,14 +14,25 @@ This project provides a simple and intuitive interface for connecting to and mon
 - Status monitoring and connection management
 
 ## Prerequisites
-
 - Python 3.8+ (https://www.python.org/)
 - J-Link software suite installed (https://www.segger.com/downloads/jlink)
 - Required Python packages:
   - PySimpleGUI
   - pylink (Segger's J-Link Python wrapper)
 
-## Installation
+### Use RTTViewer in Embedded Target
+- RTT source code is available in the J-Link Software and Documentation Pack,
+  under the following code `JLink/Samples/RTT`
+- Include this code into your embedded project and use the following function to print log
+  messages to the JLink host:
+  ```C
+  # include SEGGER_RTT.h
+
+  SEGGER_RTT_SetTerminal(0);
+  SEGGER_RTT_printf(0, "%s\n", "Hello from embedded MCU");
+  ```
+
+## GUI Installation
 
 1. Clone the repository:
    ```bash
