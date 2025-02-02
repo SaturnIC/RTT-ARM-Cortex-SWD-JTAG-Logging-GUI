@@ -9,7 +9,7 @@ from libs.jlink.rtt_handler import RTTHandler
 FILTER_APPLICATION_WAIT_TIME_s = 1
 
 
-class RTTViewer:
+class RTTGui:
     def __init__(self):
         # Initialize RTT Handler
         self._rtt_handler = RTTHandler()
@@ -18,7 +18,7 @@ class RTTViewer:
         # GUI setup
         sg.theme('Dark Gray 13')
         self._layout = [
-            [sg.Text('Segger RTT Viewer', size=(30, 1), justification='center')],
+            [sg.Text('Python RTT GUI', size=(30, 1), justification='center')],
             [sg.Column([
                 [sg.Text('MCU Chip Name:'),
                  sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
@@ -32,7 +32,7 @@ class RTTViewer:
                  sg.Text('Status: Disconnected', key='-STATUS-', size=(20, 1))]
             ])]
         ]
-        self._window = sg.Window('Python RTT Viewer', self._layout, finalize=True)
+        self._window = sg.Window('Python RTT GUI', self._layout, finalize=True)
 
         # Initialize GUI state
         self._update_gui_status(False)
@@ -119,5 +119,5 @@ class RTTViewer:
             self._window.close()
 
 if __name__ == "__main__":
-    viewer = RTTViewer()
+    viewer = RTTGui()
     viewer.run()
