@@ -32,7 +32,7 @@ class RTTViewer:
                  sg.Text('Status: Disconnected', key='-STATUS-', size=(20, 1))]
             ])]
         ]
-        self._window = sg.Window('RTT Viewer', self._layout, finalize=True)
+        self._window = sg.Window('Python RTT Viewer', self._layout, finalize=True)
 
         # Initialize GUI state
         self._update_gui_status(False)
@@ -56,6 +56,9 @@ class RTTViewer:
         self._window['-CONNECT-'].update(disabled=connected)
         self._window['-DISCONNECT-'].update(disabled=not connected)
 
+    def _append_to_log(self, message):
+        self._window['-LOG-'].update(message, append=True)
+
     def _process_log_queue(self):
         """
         Process the log queue and update the output window.
@@ -63,7 +66,7 @@ class RTTViewer:
         while not self._rtt_handler.log_queue.empty():
             try:
                 data = self._rtt_handler.log_queue.get_nowait()
-                self._window['-LOG-'].update(data, append=True)
+                self._append_to_log(data)
             except queue.Empty:
                 pass
 
@@ -100,7 +103,7 @@ class RTTViewer:
                 if event == '-CONNECT-':
                     try:
                         selected_mcu = self._window['-MCU-'].get()
-                        if self._rtt_handler.connect(selected_mcu):
+                        if self._rtt_handler.connect(selected_mcu, print_function = self._append_to_log):
                             self._update_gui_status(True)
                     except Exception as e:
                         sg.popup_error(str(e))

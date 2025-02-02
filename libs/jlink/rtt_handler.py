@@ -11,7 +11,7 @@ class RTTHandler:
         self._connected = False
         self._rtt_thread = None
 
-    def connect(self, mcu_name, block_address=None):
+    def connect(self, mcu_name, block_address=None, print_function = None):
         """
         Connect to the specified MCU and start RTT.
 
@@ -24,8 +24,10 @@ class RTTHandler:
         """
         try:
             self._jlink.open()
+            print_function("connecting to %s...\n" % mcu_name)
             self._jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
             self._jlink.connect(mcu_name)
+            print_function("connected, starting RTT...\n")
             self._jlink.rtt_start(block_address)
             self._connected = True
 
