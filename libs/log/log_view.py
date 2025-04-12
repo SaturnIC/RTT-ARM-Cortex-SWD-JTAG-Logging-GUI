@@ -6,9 +6,6 @@ COLOR_HIGHLIGHT = 'LightGreen'
 COLOR_BLACK = 'black'
 COLOR_LIGHT_GREY = "LightGray"
 
-"""
-Create the update log text closure by providing the widgets
-"""
 class LogView:
     def __init__(self, log_widget, filter_widget, highlight_widget, pause_button, window):
         self.window = window
@@ -18,25 +15,24 @@ class LogView:
         self.highlight_input_widget = highlight_widget
         self.pause_button_widget = pause_button
         # store default colors
-        self.default_background_color=sg.theme_input_background_color()
-        self.default_text_color=sg.theme_input_text_color()
+        self.default_background_color = sg.theme_input_background_color()
+        self.default_text_color = sg.theme_input_text_color()
 
-    # function to insert colored text
     def insert_colored_text(self, text, color):
         self.log_widget.Widget.tag_configure(color, foreground=color)
         self.log_widget.Widget.insert(tk.END, text, color)
         self.log_widget.Widget.see(tk.END)
 
-    def color_highlighted_text(self, text, highlight_string, append):
+    def color_highlighted_text(self, highlighted_text, append):
         # delete log if needed
-        if (append == False):
+        if not append:
             self.update_log("", append=False)
-        for line in text.splitlines():
-            line += '\n'
-            if highlight_string.lower() in line.lower():
-                self.insert_colored_text(line, COLOR_HIGHLIGHT)
+        for line_text, highlighted in highlighted_text:
+            line_text += '\n'
+            if highlighted:
+                self.insert_colored_text(line_text, COLOR_HIGHLIGHT)
             else:
-                self.insert_colored_text(line, self.default_text_color)
+                self.insert_colored_text(line_text, self.default_text_color)
 
     def update_log(self, text, append):
         self.log_widget.update(text, append=append)
@@ -56,4 +52,4 @@ class LogView:
         return self.highlight_input_widget.Get()
 
     def is_log_frozen(self):
-        return True if (self.pause_button_widget.GetText()=="Unpause") else False
+        return True if (self.pause_button_widget.GetText() == "Unpause") else False
