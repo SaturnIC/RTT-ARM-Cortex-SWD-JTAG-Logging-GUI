@@ -1,17 +1,17 @@
 # Python RTT GUI
 ![RTT GUI](./docs/python_rtt_gui.png)
 
-A Python-based GUI application for Real-Time Transfer (RTT) communication with MCUs using J-Link.
-This project provides a simple and intuitive interface for connecting to and monitoring target MCUs.
-
+A Python GUI serving as a wrapper for SEGGER Real-Time Transfer (RTT) debug communication over J-Link.
+This project accesses RTT communication directly through the J-Link drivers without the need for intermediary applications.
+It can be used as a foundation to create a custom debug communication tool for MCU development, avoiding the use of classical slower and clunky approaches like UART channels. 
+Instead, it leverages the J-Link flash debugging adapter for fast debug communication.
 
 ## Features
-
-- Connects to MCUs using J-Link debuggers
-- Real-time log display for RTT data
-- Support for filtering and selecting MCUs
-- Simple and clean GUI interface
-- Status monitoring and connection management
+- Connects to MCUs using the J-Link debugger directly via J-Link drivers, eliminating the need for intermediary software such as RTTViewer.
+- Displays debug communication live within the GUI.
+- Provides log filtering and highlighting functionality.
+- Supports most MCUs through a simple filtering and selection interface.
+- Includes status monitoring and connection management.
 
 ## Prerequisites
 - Python 3.8+ (https://www.python.org/)
@@ -21,10 +21,8 @@ This project provides a simple and intuitive interface for connecting to and mon
   - pylink (Segger's J-Link Python wrapper)
 
 ### Use RTTViewer in Embedded Target
-- RTT source code is available in the J-Link Software and Documentation Pack,
-  under the following code `JLink/Samples/RTT`
-- Include this code into your embedded project and use the SEGGER_RTT_printf function to print log
-  messages to the JLink host:
+- RTT source code is available in the J-Link Software and Documentation Pack under `JLink/Samples/RTT`.
+- Include this code in your embedded project and use the `SEGGER_RTT_printf` function to print log messages to the JLink host:
   ```C
   # include SEGGER_RTT.h
 
@@ -36,10 +34,9 @@ This project provides a simple and intuitive interface for connecting to and mon
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/python-rtt-gui.git
+   git clone https://github.com/SaturnIC/JLink-RTT-Python-GUI.git
    cd python-rtt-gui
    ```
-
 2. Install the required packages:
    ```bash
    pip install PySimpleGUI pylink
@@ -47,8 +44,7 @@ This project provides a simple and intuitive interface for connecting to and mon
    # or
    pip install -r requirements.txt
    ```
-
-3. Ensure J-Link software is installed and accessible on your system.
+3. Ensure that the J-Link drivers are installed and accessible on your system.
 
 ## Usage
 
