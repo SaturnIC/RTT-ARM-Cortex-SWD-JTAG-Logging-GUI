@@ -1,10 +1,13 @@
 # Python RTT GUI
 ![RTT GUI](./docs/python_rtt_gui.png)
 
-A Python GUI serving as a wrapper for SEGGER Real-Time Transfer (RTT) debug communication over J-Link.
-This project accesses RTT communication directly through the J-Link drivers without the need for intermediary applications.
-It can be used as a foundation to create a custom debug communication tool for MCU development, avoiding the use of classical slower and clunky approaches like UART channels. 
-Instead, it leverages the J-Link flash debugging adapter for fast debug communication.
+This project serves as a wrapper for SEGGER Real-Time Transfer (RTT) debug channel, 
+demonstrating how to replace clunky classical channels like UART with lean and mean SWD, SWO for ARM MCUs
+without the need for any intermediary applications.
+
+This project can be used as a foundation to create a custom debug communication tool for ARM MCU development.
+
+The documentation and examples in pylink, SEGGER's Python wrapper, are severely lacking when it comes to using the RTT channel, so this project may also serve as a guide to help leverage pylink for RTT.
 
 ## Features
 - Connects to MCUs using the J-Link debugger directly via J-Link drivers, eliminating the need for intermediary software such as RTTViewer.
