@@ -1,7 +1,7 @@
 # Python RTT GUI
 ![RTT GUI](./docs/python_rtt_gui.png)
 
-This project serves as a wrapper for SEGGER Real-Time Transfer (RTT) debug channel, 
+This project serves as a wrapper for SEGGER Real-Time Transfer (RTT) debug channel,
 demonstrating how to replace clunky classical channels like UART with lean and mean SWD, SWO for ARM MCUs
 without the need for any intermediary applications.
 
