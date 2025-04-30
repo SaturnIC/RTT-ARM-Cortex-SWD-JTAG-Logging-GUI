@@ -1,5 +1,5 @@
 import tkinter as tk
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 
 COLOR_BLUE = 'blue'
 COLOR_HIGHLIGHT = 'LightGreen'
