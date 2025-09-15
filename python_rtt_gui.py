@@ -27,7 +27,7 @@ class RTTViewer:
                  sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
                           key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)]
             ])],
-            [sg.Output(size=(80, 20), key='-LOG-', font=('Consolas', 10))],
+            [sg.Output(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
             [sg.Column([
                 [sg.Text('Filter:'),
                  sg.Input(key='-FILTER-', size=(20, 1), enable_events=True),
@@ -43,7 +43,7 @@ class RTTViewer:
             ])]
         ]
 
-        self._window = sg.Window('Python RTT GUI', self._layout, finalize=True)
+        self._window = sg.Window('Python RTT GUI', self._layout, finalize=True, resizable=True)
 
         # Initialize GUI state
         self._update_gui_status(False)
