@@ -45,6 +45,9 @@ class RTTViewer:
 
         self._window = sg.Window('Python RTT GUI', self._layout, finalize=True, resizable=True)
 
+        # Set minimum size
+        self._window.set_min_size((800, 600))
+
         # Initialize GUI state
         self._update_gui_status(False)
         self.current_mcu = 'STM32F427II'  # Track the currently selected MCU
