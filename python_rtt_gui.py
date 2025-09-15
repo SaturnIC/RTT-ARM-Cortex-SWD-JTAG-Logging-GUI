@@ -8,7 +8,7 @@ from libs.jlink.rtt_handler import RTTHandler
 from libs.log.log_view import LogView
 
 # constants
-FILTER_APPLICATION_WAIT_TIME_s = 1
+FILTER_APPLICATION_WAIT_TIME_s = 2
 
 class RTTViewer:
     def __init__(self):
@@ -23,8 +23,9 @@ class RTTViewer:
             [sg.Text('Python RTT GUI', size=(30, 1), justification='center')],
             [sg.Column([
                 [sg.Text('MCU Chip Name:'),
+                 sg.Text("", size=(1, 1)),  # horizontal spacer
                  sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
-                          key='-MCU-', size=(20, 1), enable_events=True)]
+                          key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)]
             ])],
             [sg.Output(size=(80, 20), key='-LOG-', font=('Consolas', 10))],
             [sg.Column([
@@ -51,7 +52,7 @@ class RTTViewer:
         self.mcu_list_last_update_time = time.time()
 
         # Bind the <KeyRelease> event to the Combo widget
-        self._window['-MCU-'].Widget.bind("<KeyRelease>", lambda event: self._window.write_event_value('-MCU-KEYRELEASE-', event))
+        self._window['-MCU-'].Widget.bind("<KeyPress>", lambda event: self._window.write_event_value('-MCU-KEYRELEASE-', event))
 
         # Create LogView instance
         self.log_view = LogView(
@@ -88,9 +89,9 @@ class RTTViewer:
 
     def _filter_mcu_list(self, filter_string):
         if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
-            input_text = filter_string.lower()
+            input_text = filter_string.upper()
             filtered = [mcu for mcu in self.supported_mcu_list
-                        if input_text in mcu.lower()]
+                        if input_text in mcu]
             self._window['-MCU-'].update(values=filtered)
 
     def run(self):
@@ -103,8 +104,7 @@ class RTTViewer:
 
                 # Check MCU filter
                 if self.mcu_filter_string != "":
-                    if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
-                        self._filter_mcu_list(self.mcu_filter_string)
+                    self._filter_mcu_list(self.mcu_filter_string)
 
                 # Check events
                 event, values = self._window.read(timeout=100)
