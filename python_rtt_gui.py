@@ -111,7 +111,7 @@ class RTTViewer:
         ]
         while True:
             for msg in demo_messages:
-                self.update_log_text(msg)
+                self._rtt_handler.log_queue.put(msg)
                 time.sleep(0.5)
             time.sleep(2)
 
