@@ -130,15 +130,13 @@ def create_update_log_text_closure(log_view):
 
         if highlight_string == "":
             # highlight string is empty
+            highlighted_list = [(line[0], False) for line in filtered_text]
+            old_filtered_text = highlighted_list.copy()
             if old_highlight_string != "":
                 # highlight string newly empty
-                highlighted_list = [(line[0], False) for line in filtered_text]
-                old_filtered_text = highlighted_list.copy()
                 last_applied_highlight_string = ""
                 log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
                 highlight_input_active = False
-            else:
-                highlighted_list = old_filtered_text.copy()
         else:
             current_time = time.time()
             if highlight_string != old_highlight_string:

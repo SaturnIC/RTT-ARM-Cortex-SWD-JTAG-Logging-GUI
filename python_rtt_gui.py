@@ -172,8 +172,8 @@ class RTTViewer:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Python RTT GUI')
-    parser.add_argument('--log-messages', action='store_true', help='Enable demo mode with sample log messages')
+    parser.add_argument('--demo-messages', action='store_true', help='Enable demo mode with sample log messages')
     args = parser.parse_args()
 
-    viewer = RTTViewer(demo=args.log_messages)
+    viewer = RTTViewer(demo=args.demo_messages)
     viewer.run()
