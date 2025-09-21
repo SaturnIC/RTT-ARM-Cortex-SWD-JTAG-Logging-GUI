@@ -189,7 +189,8 @@ def create_update_log_text_closure(log_view):
         """
         Main function to update log text with filtering and highlighting
         """
-        global old_raw_log_text, old_filtered_text, last_log_gui_filter_update_date
+        global old_raw_log_text, old_filtered_text, last_log_gui_filter_update_date, old_highlighted_text_list
+
         current_pause_state = log_view.is_log_frozen()
         new_lines = [(line, False) for line in new_text.split('\n') if line]
         raw_log_text = old_raw_log_text + new_lines
@@ -204,8 +205,8 @@ def create_update_log_text_closure(log_view):
         highlighted_text_list, append = _highlight_text(highlight_string, filtered_text)
 
         # print text to widget only if changed
-        if not (append == False and highlighted_text_list == old_filtered_text):
-            log_view.color_highlighted_text(highlighted_text_list, append=append)
+        if (append == True and highlighted_text_list != old_highlighted_text_list):
+            log_view.print_highlighted_text(highlighted_text_list, append=append)
 
         # update state
         old_raw_log_text = raw_text_after_freezing.copy()

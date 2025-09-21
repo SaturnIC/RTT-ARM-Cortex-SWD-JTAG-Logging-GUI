@@ -23,7 +23,7 @@ class LogView:
         self.log_widget.Widget.insert(tk.END, text, color)
         self.log_widget.Widget.see(tk.END)
 
-    def color_highlighted_text(self, highlighted_text, append):
+    def print_highlighted_text(self, highlighted_text, append):
         # delete log if needed
         if not append:
             self.update_log("", append=False)
