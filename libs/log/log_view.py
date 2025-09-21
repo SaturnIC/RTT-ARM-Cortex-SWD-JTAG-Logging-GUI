@@ -23,10 +23,11 @@ class LogView:
         self.log_widget.Widget.insert(tk.END, text, color)
         self.log_widget.Widget.see(tk.END)
 
-    def print_highlighted_text(self, highlighted_text, append):
+    def clear_log(self):
+        self.update_log("", append=False)
+
+    def insert_highlighted_text(self, highlighted_text):
         # delete log if needed
-        if not append:
-            self.update_log("", append=False)
         for line_text, highlighted in highlighted_text:
             line_text += '\n'
             if highlighted:
@@ -51,5 +52,5 @@ class LogView:
     def get_highlight_string(self):
         return self.highlight_input_widget.Get()
 
-    def is_log_frozen(self):
+    def is_log_paused(self):
         return True if (self.pause_button_widget.GetText() == "Unpause") else False

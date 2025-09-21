@@ -9,7 +9,7 @@ def setup_log_view():
     log_view = Mock()
     log_view.get_filter_string.return_value = ""
     log_view.get_highlight_string.return_value = ""
-    log_view.is_log_frozen.return_value = False
+    log_view.is_log_paused.return_value = False
     return log_view
 
 @pytest.fixture
@@ -61,11 +61,11 @@ def test_freezing_basic(setup_update_log):
     log_view, update_log = setup_update_log
     test_lines = ["line1", "line2", "line3"]
     
-    log_view.is_log_frozen.return_value = True
+    log_view.is_log_paused.return_value = True
     update_log("\n".join(test_lines))
     update_log("line4\nline5")
     
-    log_view.is_log_frozen.return_value = False
+    log_view.is_log_paused.return_value = False
     update_log("line6")
     
     assert len(log_controller.old_raw_log_text) == 3
@@ -195,11 +195,11 @@ def test_freezing_with_multiple_updates(setup_update_log):
     log_view, update_log = setup_update_log
     test_lines = ["line1", "line2", "line3"]
     
-    log_view.is_log_frozen.return_value = True
+    log_view.is_log_paused.return_value = True
     update_log("\n".join(test_lines))
     update_log("line4\nline5")
     
-    log_view.is_log_frozen.return_value = False
+    log_view.is_log_paused.return_value = False
     update_log("line6")
     
     assert len(log_controller.old_raw_log_text) == 3
