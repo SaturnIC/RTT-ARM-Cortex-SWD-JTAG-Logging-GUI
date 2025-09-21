@@ -163,6 +163,8 @@ class RTTViewer:
                     current_text = self._window['-PAUSE-'].GetText()
                     new_text = 'Unpause' if current_text == 'Pause' else 'Pause'
                     self._window['-PAUSE-'].update(new_text)
+                    # Trigger update to show accumulated messages if unpaused
+                    self.update_log_text("")
 
                 # Update log
                 self._process_log_queue()

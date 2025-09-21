@@ -119,9 +119,23 @@ def create_update_log_text_closure(log_view):
         log_view.update_log('', append=False)
         return filtered_text
 
+    def _get_highlighted_text(highlight_string, filtered_text):
+        """
+        Get highlighted text list
+        """
+        if highlight_string == "":
+            return [(line[0], False) for line in filtered_text]
+        else:
+            highlighted_list = []
+            for line in filtered_text:
+                line_text = line[0]
+                highlighted = highlight_string.lower() in line_text.lower()
+                highlighted_list.append((line_text, highlighted))
+            return highlighted_list
+
     def _highlight_text(highlight_string, filtered_text):
         """
-        Highlight matching text in the log
+        Highlight matching text in the log and determine append mode
         """
         nonlocal old_highlight_string, last_applied_highlight_string, highlight_input_active
         global last_highlight_change_time, old_filtered_text
@@ -130,7 +144,8 @@ def create_update_log_text_closure(log_view):
 
         if highlight_string == "":
             # highlight string is empty
-            highlighted_list = [(line[0], False) for line in filtered_text]
+            highlighted_list = _get_highlighted_text(highlight_string, filtered_text)
+            append = len(highlighted_list) > len(old_filtered_text)
             old_filtered_text = highlighted_list.copy()
             if old_highlight_string != "":
                 # highlight string newly empty
@@ -147,11 +162,7 @@ def create_update_log_text_closure(log_view):
             if ((current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s) and
                 (last_applied_highlight_string != highlight_string)):
                 last_applied_highlight_string = highlight_string
-                highlighted_list = []
-                for line in filtered_text:
-                    line_text = line[0]
-                    highlighted = highlight_string.lower() in line_text.lower()
-                    highlighted_list.append((line_text, highlighted))
+                highlighted_list = _get_highlighted_text(highlight_string, filtered_text)
                 old_filtered_text = highlighted_list.copy()
                 log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
                 highlight_input_active = False
@@ -160,11 +171,7 @@ def create_update_log_text_closure(log_view):
                 # New lines added, highlight them
                 diff = len(filtered_text) - len(old_filtered_text)
                 new_lines = filtered_text[-diff:]
-                highlighted_new = []
-                for line in new_lines:
-                    line_text = line[0]
-                    highlighted = highlight_string.lower() in line_text.lower()
-                    highlighted_new.append((line_text, highlighted))
+                highlighted_new = _get_highlighted_text(highlight_string, new_lines)
                 highlighted_list = old_filtered_text + highlighted_new
                 old_filtered_text = highlighted_list.copy()
                 append = True
@@ -196,8 +203,9 @@ def create_update_log_text_closure(log_view):
         highlight_string = log_view.get_highlight_string()
         highlighted_text_list, append = _highlight_text(highlight_string, filtered_text)
 
-        # print text to widget
-        log_view.color_highlighted_text(highlighted_text_list, append=append)
+        # print text to widget only if changed
+        if not (append == False and highlighted_text_list == old_filtered_text):
+            log_view.color_highlighted_text(highlighted_text_list, append=append)
 
         # update state
         old_raw_log_text = raw_text_after_freezing.copy()
