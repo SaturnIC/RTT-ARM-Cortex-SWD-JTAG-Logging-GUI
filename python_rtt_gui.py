@@ -1,7 +1,8 @@
 import FreeSimpleGUI as sg
 import time
 import queue
-import time
+import threading
+import argparse
 import libs.log.log_controller as log_controller
 from datetime import datetime
 from libs.jlink.rtt_handler import RTTHandler
@@ -11,7 +12,7 @@ from libs.log.log_view import LogView
 FILTER_APPLICATION_WAIT_TIME_s = 2
 
 class RTTViewer:
-    def __init__(self):
+    def __init__(self, demo=False):
         # Initialize RTT Handler
         self._rtt_handler = RTTHandler()
         self.supported_mcu_list = self._rtt_handler.get_supported_mcus()
@@ -69,6 +70,8 @@ class RTTViewer:
         # Create update closure
         self.update_log_text = log_controller.create_update_log_text_closure(self.log_view)
 
+        self.demo = demo
+
     def _update_gui_status(self, connected):
         self._window['-STATUS-'].update(
             'Status: Connected' if connected else 'Status: Disconnected'
@@ -97,8 +100,28 @@ class RTTViewer:
                         if input_text in mcu]
             self._window['-MCU-'].update(values=filtered)
 
+    def _demo_loop(self):
+        demo_messages = [
+            "[INFO] System initialized\n",
+            "[DEBUG] Connecting to peripherals\n",
+            "[WARN] Low battery detected\n",
+            "[ERROR] Failed to read sensor data\n",
+            "[INFO] Processing data\n",
+            "[DEBUG] Update complete\n",
+        ]
+        while True:
+            for msg in demo_messages:
+                self.update_log_text(msg)
+                time.sleep(0.5)
+            time.sleep(2)
+
     def run(self):
         self.update_log_text('')
+
+        if self.demo:
+            self._update_gui_status(True)
+            demo_thread = threading.Thread(target=self._demo_loop, daemon=True)
+            demo_thread.start()
 
         try:
             # GUI event loop
@@ -148,5 +171,9 @@ class RTTViewer:
             self._window.close()
 
 if __name__ == "__main__":
-    viewer = RTTViewer()
+    parser = argparse.ArgumentParser(description='Python RTT GUI')
+    parser.add_argument('--log-messages', action='store_true', help='Enable demo mode with sample log messages')
+    args = parser.parse_args()
+
+    viewer = RTTViewer(demo=args.log_messages)
     viewer.run()

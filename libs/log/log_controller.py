@@ -123,62 +123,62 @@ def create_update_log_text_closure(log_view):
         """
         Highlight matching text in the log
         """
-        nonlocal old_highlight_string
-        global old_filtered_text, last_applied_highlight_string, highlight_input_active, last_highlight_change_time
-        
-        # Check if new_filtered_text is old_filtered_text + something new
-        # if 
+        nonlocal old_highlight_string, last_applied_highlight_string, highlight_input_active
+        global last_highlight_change_time, old_filtered_text
 
+        append = False
 
         if highlight_string == "":
             # highlight string is empty
             if old_highlight_string != "":
                 # highlight string newly empty
-                old_filtered_text = filtered_text.copy()
+                highlighted_list = [(line[0], False) for line in filtered_text]
+                old_filtered_text = highlighted_list.copy()
                 last_applied_highlight_string = ""
+                log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
+                highlight_input_active = False
             else:
-                return old_filtered_text
-        current_time = time.time()
-        if highlight_string != old_highlight_string:
-            last_highlight_change_time = current_time
-            log_view.set_highlight_color_for_input_widget("-HIGHLIGHT-")
-            highlight_input_active = True
-        if ((current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s) and
-            (last_applied_highlight_string != highlight_string)):
-            last_applied_highlight_string = highlight_string
-            highlighted_text_list = []
-            for line in filtered_text:
-                line_text = line[0]
-                if highlight_string.lower() in line_text.lower():
-                    highlighted_text.append((line_text, True))
-                else:
-                    highlighted_text.append((line_text, False))
-            log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
-            highlight_input_active = False
-            old_filtered_text = highlighted_text.copy()
+                highlighted_list = old_filtered_text.copy()
         else:
-            if len(filtered_text) > len(old_filtered_text):
-                diff = len(filtered_text) - len(old_filtered_text)
-                new_lines = filtered_text[-diff:]
-                highlighted_lines = []
-                for line in new_lines:
-                    line_text = line[0]
-                    if highlight_string.lower() in line_text.lower():
-                        highlighted_lines.append((line_text, True))
-                    else:
-                        highlighted_lines.append((line_text, False))
-                highlighted_text_list = old_filtered_text + highlighted_lines
-            else:
-                highlighted_text_list = []
+            current_time = time.time()
+            if highlight_string != old_highlight_string:
+                old_highlight_string = highlight_string
+                last_highlight_change_time = current_time
+                log_view.set_highlight_color_for_input_widget("-HIGHLIGHT-")
+                highlight_input_active = True
+            if ((current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s) and
+                (last_applied_highlight_string != highlight_string)):
+                last_applied_highlight_string = highlight_string
+                highlighted_list = []
                 for line in filtered_text:
                     line_text = line[0]
-                    if highlight_string.lower() in line_text.lower():
-                        highlighted_text.append((line_text, True))
-                    else:
-                        highlighted_text.append((line_text, False))
-            old_filtered_text = highlighted_text.copy()
-        old_highlight_string = highlight_string
-        return highlighted_text
+                    highlighted = highlight_string.lower() in line_text.lower()
+                    highlighted_list.append((line_text, highlighted))
+                old_filtered_text = highlighted_list.copy()
+                log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
+                highlight_input_active = False
+                append = False
+            elif len(filtered_text) > len(old_filtered_text):
+                # New lines added, highlight them
+                diff = len(filtered_text) - len(old_filtered_text)
+                new_lines = filtered_text[-diff:]
+                highlighted_new = []
+                for line in new_lines:
+                    line_text = line[0]
+                    highlighted = highlight_string.lower() in line_text.lower()
+                    highlighted_new.append((line_text, highlighted))
+                highlighted_list = old_filtered_text + highlighted_new
+                old_filtered_text = highlighted_list.copy()
+                append = True
+            else:
+                # No change
+                highlighted_list = old_filtered_text.copy()
+                append = False
+                if highlight_input_active and (current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s):
+                    log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
+                    highlight_input_active = False
+
+        return highlighted_list, append
 
     def update_log_text(new_text):
         """
