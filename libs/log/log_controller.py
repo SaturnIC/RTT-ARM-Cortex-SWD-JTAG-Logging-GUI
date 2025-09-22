@@ -56,7 +56,7 @@ def create_update_log_text_closure(log_view):
             if pause_text_state == False:
                 # Pause released
                 new_lines_f = [tuple(line) for line in raw_log_lines[len(old_lines_after_pausing):]]
-                old_lines_after_pausing = raw_log_lines[len(old_lines_after_pausing):]
+                old_lines_after_pausing = raw_log_lines[:len(old_lines_after_pausing)]
                 old_pause_text_state = False
             else:
                 # Pause pressed
@@ -217,7 +217,7 @@ def create_update_log_text_closure(log_view):
         global old_raw_log_lines, old_filtered_lines, last_log_gui_filter_update_date, old_highlighted_text_list
 
         # add new text lines to raw log
-        new_lines = [(line, False) for line in new_text.split('\n')]
+        new_lines = [(line, False) for line in new_text.split('\n') if line]
 
         # handle pausing
         current_pause_state = log_view.is_log_paused()
@@ -237,9 +237,8 @@ def create_update_log_text_closure(log_view):
 
         # update state
         old_raw_log_lines = old_raw_log_lines.copy() + new_lines
-        old_filtered_lines = highlighted_text_list
-        if new_text.strip():
-            last_log_gui_filter_update_date = datetime.datetime.now()
+        old_filtered_lines = old_filtered_lines.copy() + new_filtered_lines
+        last_log_gui_filter_update_date = datetime.datetime.now()
 
 
     return update_log_text
