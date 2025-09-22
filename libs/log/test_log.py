@@ -33,7 +33,7 @@ def test_filtering_basic(setup_update_log):
     time.sleep(log_controller.FILTER_APPLICATION_WAIT_TIME_s + 0.1)
     update_log("")
     
-    filtered_lines = [line[0] for line in log_controller.old_filtered_text]
+    filtered_lines = [line[0] for line in log_controller.old_filtered_lines]
     assert filtered_lines == [
         "error: something went wrong",
         "error: critical failure"
@@ -54,8 +54,8 @@ def test_highlighting_basic(setup_update_log):
     time.sleep(log_controller.FILTER_APPLICATION_WAIT_TIME_s + 0.1)
     update_log("")
 
-    highlighted_flags = [line[1] for line in log_controller.old_filtered_text]
-    assert highlighted_flags == [True, False, False, True]
+    highlighted_flags = [line[1] for line in log_controller.old_filtered_lines]
+    assert highlighted_flags == [True, False, False, True, False]
 
 def test_freezing_basic(setup_update_log):
     log_view, update_log = setup_update_log
@@ -68,8 +68,8 @@ def test_freezing_basic(setup_update_log):
     log_view.is_log_paused.return_value = False
     update_log("line6")
     
-    assert len(log_controller.old_raw_log_text) == 3
-    assert log_controller.old_raw_log_text[-1][0] == "line3"
+    assert len(log_controller.old_lines_after_pausing) == 5
+    assert log_controller.old_lines_after_pausing[-1][0] == "line5"
 
 def test_filter_and_highlight(setup_update_log):
     log_view, update_log = setup_update_log
@@ -83,11 +83,12 @@ def test_filter_and_highlight(setup_update_log):
     log_view.get_filter_string.return_value = "error"
     log_view.get_highlight_string.return_value = "critical"
     update_log("\n".join(test_lines))
-    
+
     time.sleep(log_controller.FILTER_APPLICATION_WAIT_TIME_s + 0.1)
-    
-    filtered_lines = [line[0] for line in log_controller.old_filtered_text]
-    highlighted_flags = [line[1] for line in log_controller.old_filtered_text]
+    update_log("")
+
+    filtered_lines = [line[0] for line in log_controller.old_filtered_lines]
+    highlighted_flags = [line[1] for line in log_controller.old_filtered_lines]
     
     assert filtered_lines == [
         "error: something went wrong",
@@ -102,9 +103,9 @@ def test_clear_logs(setup_update_log):
     
     log_controller.clear_logs()
     
-    assert log_controller.old_raw_log_text == []
-    assert log_controller.old_filtered_text == []
-    assert log_controller.old_text_after_freezing == []
+    assert log_controller.old_raw_log_lines == []
+    assert log_controller.old_filtered_lines == []
+    assert log_controller.old_lines_after_pausing == []
 
 def test_timestamp_update(setup_update_log):
     log_view, update_log = setup_update_log
@@ -127,10 +128,11 @@ def test_case_insensitive_filtering(setup_update_log):
     
     log_view.get_filter_string.return_value = "error"
     update_log("\n".join(test_lines))
-    
+
     time.sleep(log_controller.FILTER_APPLICATION_WAIT_TIME_s + 0.1)
-    
-    filtered_lines = [line[0] for line in log_controller.old_filtered_text]
+    update_log("")
+
+    filtered_lines = [line[0] for line in log_controller.old_filtered_lines]
     assert filtered_lines == ["ERROR: something went wrong"]
 
 def test_case_insensitive_highlighting(setup_update_log):
@@ -144,11 +146,12 @@ def test_case_insensitive_highlighting(setup_update_log):
     
     log_view.get_highlight_string.return_value = "warning"
     update_log("\n".join(test_lines))
-    
+
     time.sleep(log_controller.FILTER_APPLICATION_WAIT_TIME_s + 0.1)
-    
-    highlighted_flags = [line[1] for line in log_controller.old_filtered_text]
-    assert highlighted_flags == [False, True, False, False]
+    update_log("")
+
+    highlighted_flags = [line[1] for line in log_controller.old_filtered_lines]
+    assert highlighted_flags == [False, True, False, False, False]
 
 def test_timestamp_not_updated_on_empty_input(setup_update_log):
     log_view, update_log = setup_update_log
@@ -164,10 +167,10 @@ def test_multiple_newlines(setup_update_log):
     test_input = "line1\n\nline2"
     update_log(test_input)
     
-    assert len(log_controller.old_raw_log_text) == 3
-    assert log_controller.old_raw_log_text[0][0] == "line1"
-    assert log_controller.old_raw_log_text[1][0] == ""
-    assert log_controller.old_raw_log_text[2][0] == "line2"
+    assert len(log_controller.old_raw_log_lines) == 3
+    assert log_controller.old_raw_log_lines[0][0] == "line1"
+    assert log_controller.old_raw_log_lines[1][0] == ""
+    assert log_controller.old_raw_log_lines[2][0] == "line2"
 
 def test_timestamp_update_interval(setup_update_log):
     log_view, update_log = setup_update_log
@@ -202,8 +205,8 @@ def test_freezing_with_multiple_updates(setup_update_log):
     log_view.is_log_paused.return_value = False
     update_log("line6")
     
-    assert len(log_controller.old_raw_log_text) == 3
-    assert log_controller.old_raw_log_text[-1][0] == "line3"
+    assert len(log_controller.old_lines_after_pausing) == 5
+    assert log_controller.old_lines_after_pausing[-1][0] == "line5"
 
 def test_highlighting_with_empty_string(setup_update_log):
     log_view, update_log = setup_update_log
@@ -212,7 +215,7 @@ def test_highlighting_with_empty_string(setup_update_log):
     log_view.get_highlight_string.return_value = ""
     update_log("\n".join(test_lines))
     
-    highlighted_flags = [line[1] for line in log_controller.old_filtered_text]
+    highlighted_flags = [line[1] for line in log_controller.old_filtered_lines]
     assert all(flag is False for flag in highlighted_flags)
 
 def test_filtering_with_empty_string(setup_update_log):
@@ -222,8 +225,8 @@ def test_filtering_with_empty_string(setup_update_log):
     log_view.get_filter_string.return_value = ""
     update_log("\n".join(test_lines))
     
-    assert len(log_controller.old_filtered_text) == 3
-    assert all(line[0] in ["line1", "line2", "line3"] for line in log_controller.old_filtered_text)
+    assert len(log_controller.old_filtered_lines) == 3
+    assert all(line[0] in ["line1", "line2", "line3"] for line in log_controller.old_filtered_lines)
 
 def test_timestamp_initialization(setup_update_log):
     log_view, update_log = setup_update_log
