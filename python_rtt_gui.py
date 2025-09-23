@@ -22,7 +22,7 @@ class RTTViewer:
         # Create layout with new filter, highlight, and pause elements
         self._layout = [
             [sg.Text('Python RTT GUI', size=(30, 1), justification='center')],
-            [sg.Column([
+            [sg.Frame('Configuration', [
                 [sg.Text('MCU Chip Name:', size=(14, 1)),
                  sg.Text("", size=(1, 1)),  # horizontal spacer
                  sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
@@ -30,22 +30,24 @@ class RTTViewer:
                 [sg.Text('Interface:', size=(14, 1)),
                  sg.Text("", size=(1, 1)),  # horizontal spacer
                  sg.Combo(['SWD', 'JTAG'], default_value='SWD',
-                          key='-INTERFACE-', size=(10, 1), auto_size_text=False)]
-            ])],
-            [sg.Output(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
-            [sg.Column([
-                [sg.Text('Filter:'),
-                 sg.Input(key='-FILTER-', size=(20, 1), enable_events=True),
-                 sg.Text('Highlight:'),
-                 sg.Input(key='-HIGHLIGHT-', size=(20, 1), enable_events=True),
-                 sg.Button('Pause', key='-PAUSE-', disabled=False)]
-            ])],
-            [sg.Column([
+                          key='-INTERFACE-', size=(10, 1), auto_size_text=False)],
+            ], pad=((10,10),(10,10)))],
+            [sg.Frame('Connection', [
                 [sg.Button('Connect', key='-CONNECT-'),
-                 sg.Button('Disconnect', key='-DISCONNECT-', disabled=True),
-                 sg.Button('Clear', key='-CLEAR-'),
-                 sg.Text('Status: Disconnected', key='-STATUS-', size=(20, 1))]
-            ])]
+                 sg.Button('Disconnect', key='-DISCONNECT-', disabled=True)],
+                [sg.Text('Status: Disconnected', key='-STATUS-', size=(20, 1))]
+            ], pad=((10,10),(10,10)))],
+            [sg.Frame('Log', [
+                [sg.Output(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
+                [sg.Column([
+                    [sg.Text('Filter:'),
+                     sg.Input(key='-FILTER-', size=(20, 1), enable_events=True),
+                     sg.Text('Highlight:'),
+                     sg.Input(key='-HIGHLIGHT-', size=(20, 1), enable_events=True),
+                     sg.Button('Pause', key='-PAUSE-', disabled=False),
+                     sg.Button('Clear', key='-CLEAR-')]
+                ])]
+            ], expand_x=True, expand_y=True, pad=((10,10),(10,20)))]
         ]
 
         self._window = sg.Window('Python RTT GUI', self._layout, finalize=True, resizable=True)
