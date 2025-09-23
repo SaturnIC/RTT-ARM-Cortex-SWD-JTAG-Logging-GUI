@@ -21,22 +21,23 @@ class RTTViewer:
 
         # Create layout with new filter, highlight, and pause elements
         self._layout = [
-            [sg.Text('Python RTT GUI', size=(30, 1), justification='center')],
+            [sg.Text('Python RTT GUI', size=(20, 1), justification='center')],
             [sg.Frame('Configuration', [
                 [sg.Text('MCU Chip Name:', size=(14, 1)),
-                 sg.Text("", size=(1, 1)),  # horizontal spacer
-                 sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
-                          key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)],
+                sg.Text("", size=(1, 1)),  # horizontal spacer
+                sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
+                        key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)],
                 [sg.Text('Interface:', size=(14, 1)),
-                 sg.Text("", size=(1, 1)),  # horizontal spacer
-                 sg.Combo(['SWD', 'JTAG'], default_value='SWD',
-                          key='-INTERFACE-', size=(10, 1), auto_size_text=False)],
-            ], pad=((10,10),(10,10)))],
-            [sg.Frame('Connection', [
+                sg.Text("", size=(1, 1)),  # horizontal spacer
+                sg.Combo(['SWD', 'JTAG'], default_value='SWD',
+                        key='-INTERFACE-', size=(10, 1), auto_size_text=False)],
+                ], pad=((10,30),(10,10))),
+            sg.Frame('Connection', [
                 [sg.Button('Connect', key='-CONNECT-'),
-                 sg.Button('Disconnect', key='-DISCONNECT-', disabled=True)],
+                sg.Button('Disconnect', key='-DISCONNECT-', disabled=True)],
                 [sg.Text('Status: Disconnected', key='-STATUS-', size=(20, 1))]
-            ], pad=((10,10),(10,10)))],
+                ], pad=((20,10),(10,10)))
+            ],
             [sg.Frame('Log', [
                 [sg.Output(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
                 [sg.Column([
