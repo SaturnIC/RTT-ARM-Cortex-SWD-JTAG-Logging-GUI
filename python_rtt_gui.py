@@ -83,9 +83,9 @@ class RTTViewer:
     def _process_log_queue(self):
         while not self._rtt_handler.log_queue.empty():
             try:
-                data = self._rtt_handler.log_queue.get_nowait()
-                # Use the update closure to process and display data
-                self.update_log_text(data)
+                line = self._rtt_handler.log_queue.get_nowait()
+                # Use the update closure to process and display each line
+                self.update_log_text(line)
             except queue.Empty:
                 pass
 
@@ -102,16 +102,16 @@ class RTTViewer:
 
     def _demo_loop(self):
         demo_messages = [
-            "[INFO] System initialized\n",
-            "[DEBUG] Connecting to peripherals\n",
-            "[WARN] Low battery detected\n",
-            "[ERROR] Failed to read sensor data\n",
-            "[INFO] Processing data\n",
-            "[DEBUG] Update complete\n",
+            "[INFO] System initialized",
+            "[DEBUG] Connecting to peripherals",
+            "[WARN] Low battery detected",
+            "[ERROR] Failed to read sensor data",
+            "[INFO] Processing data",
+            "[DEBUG] Update complete",
         ]
         while True:
             for msg in demo_messages:
-                self._rtt_handler.log_queue.put(msg)
+                self._rtt_handler.log_queue.put(msg + '\n')
                 time.sleep(2)
             time.sleep(4)
 

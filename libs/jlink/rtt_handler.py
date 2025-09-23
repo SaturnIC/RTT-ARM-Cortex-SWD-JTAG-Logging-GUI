@@ -10,6 +10,7 @@ class RTTHandler:
         self._log_queue = queue.Queue()
         self._connected = False
         self._rtt_thread = None
+        self._buffer = ""
 
     def connect(self, mcu_name, block_address=None, print_function = None):
         """
@@ -53,7 +54,7 @@ class RTTHandler:
 
     def _read_rtt(self):
         """
-        Continuously read RTT data and put it into the log queue.
+        Continuously read RTT data, parse into lines, and put each line into the log queue.
         """
         while self._connected:
             try:
@@ -61,7 +62,17 @@ class RTTHandler:
                 if data:
                     byte_string = bytes(data)
                     latin_string = byte_string[2:].decode('latin-1') # first two bytes used in header?
-                    self._log_queue.put(latin_string)
+                    if latin_string.endswith('\n'):
+                        # Complete data, process all lines
+                        full_string = self._buffer + latin_string
+                        lines = full_string.split('\n')
+                        for line in lines:
+                            if line:  # Skip empty lines
+                                self._log_queue.put(line + '\n')
+                        self._buffer = ""
+                    else:
+                        # Incomplete data, accumulate in buffer
+                        self._buffer += latin_string
                 time.sleep(0.1)
             except pylink.JLinkException:
                 break
