@@ -58,7 +58,7 @@ class RTTHandler:
         """
         while self._connected:
             try:
-                data = self._jlink.rtt_read(0, 1024)
+                data = self._jlink.rtt_read(0, 256)
                 if data:
                     byte_string = bytes(data)
                     latin_string = byte_string[2:].decode('latin-1') # first two bytes used in header?
