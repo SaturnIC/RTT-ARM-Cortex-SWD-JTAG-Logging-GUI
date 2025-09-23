@@ -14,9 +14,10 @@ old_lines_after_pausing = []
 FILTER_APPLICATION_WAIT_TIME_s = 0.5
 GUI_MINIMUM_REFRESH_INTERVAL_s = 0.5
 
-def create_update_log_text_closure(log_view):
+def create_log_processor_and_displayer(log_view):
     """
-    Create the update log text closure by providing the widgets
+    Create the log processor and displayer by providing the widgets
+    Returns a dict with 'process' and 'display' functions
     """
     # Store previous data for comparison
     old_filter_string = ""
@@ -85,12 +86,15 @@ def create_update_log_text_closure(log_view):
 
         # handle changed filter string
         current_time = time.time()
+        set_filter_highlight_color = False
+        set_filter_default_color = False
         if filter_string != old_filter_string:
             old_filter_string = filter_string
             last_filter_change_time = current_time
-            log_view.set_highlight_color_for_input_widget("-FILTER-")
+            set_filter_highlight_color = True
             filter_input_active = True
 
+        filter_reprint = False
         if (last_applied_filter_string != filter_string) \
             and (current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
             # change filter string apply timeout expired
@@ -98,30 +102,27 @@ def create_update_log_text_closure(log_view):
             new_filtered_lines = _apply_text_filter(last_applied_filter_string, old_log_lines + new_log_lines)
             old_filtered_lines = []
             filter_reprint = True
-            log_view.set_default_color_for_input_widget("-FILTER-")
+            set_filter_default_color = True
             filter_input_active = False
         else:
             if (filter_input_active and
                 current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
                 # remove input field coloring even if value didn't change
-                log_view.set_default_color_for_input_widget("-FILTER-")
+                set_filter_default_color = True
                 filter_input_active = False
             if new_log_lines != []:
                 new_filtered_lines = _apply_text_filter(last_applied_filter_string, new_log_lines)
                 old_filtered_lines = old_filtered_lines.copy()
-                filter_reprint = False
             else:
                 new_filtered_lines = []
                 old_filtered_lines = old_filtered_lines.copy()
-                filter_reprint = False
 
-        return new_filtered_lines, old_filtered_lines, filter_reprint
+        return new_filtered_lines, old_filtered_lines, filter_reprint, set_filter_highlight_color, set_filter_default_color
 
     def _clear_log_text():
         global old_lines_after_pausing
         filtered_text = []
         old_lines_after_pausing = []
-        log_view.update_log('', append=False)
         return filtered_text
 
     def _create_highlighted_text_list(highlight_string, text_to_highlight):
@@ -176,11 +177,13 @@ def create_update_log_text_closure(log_view):
 
         # handle changed highlight string
         current_time = time.time()
+        set_highlight_highlight_color = False
+        set_highlight_default_color = False
         if highlight_string != old_highlight_string:
             # highlight string changed
             old_highlight_string = highlight_string
             last_highlight_change_time = current_time
-            log_view.set_highlight_color_for_input_widget("-HIGHLIGHT-")
+            set_highlight_highlight_color = True
             highlight_input_active = True
 
         if (current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s) \
@@ -188,7 +191,7 @@ def create_update_log_text_closure(log_view):
                 # change timer expired for new highlight string
                 last_applied_highlight_string = highlight_string
                 highlighted_list = _assemble_changed_highlighted_list(old_log_lines, new_log_lines, last_applied_highlight_string, True)
-                log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
+                set_highlight_default_color = True
                 highlight_input_active = False
                 append = False
         elif new_log_lines != []:
@@ -200,21 +203,16 @@ def create_update_log_text_closure(log_view):
             highlighted_list = []
             append = True
             if highlight_input_active and (current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s):
-                log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
+                set_highlight_default_color = True
                 highlight_input_active = False
 
-        return highlighted_list, append
+        return highlighted_list, append, set_highlight_highlight_color, set_highlight_default_color
 
-    def _display_highlighted_text(highlighted_text_to_print, append):
-        if (append == False):
-            log_view.clear_log()
-        log_view.insert_highlighted_text(highlighted_text_to_print)
-
-    def update_log_text(new_text):
+    def process_log_text(new_text):
         """
-        Main function to update log text with filtering and highlighting
+        Process new log text and return update info
         """
-        global old_raw_log_lines, old_filtered_lines, last_log_gui_filter_update_date, old_highlighted_text_list
+        global old_raw_log_lines, old_filtered_lines, last_log_gui_filter_update_date
 
         # add new text lines to raw log
         new_lines = [(line, False) for line in new_text.split('\n') if line]
@@ -225,23 +223,59 @@ def create_update_log_text_closure(log_view):
 
         # filter text with filter string
         filter_string = log_view.get_filter_string()
-        new_filtered_lines, old_filtered_lines, filter_reprint = _handle_filtering(old_lines_after_pausing, new_lines_after_pausing, old_filtered_lines, filter_string)
+        new_filtered_lines, old_filtered_lines, filter_reprint, set_filter_highlight_color, set_filter_default_color = _handle_filtering(old_lines_after_pausing, new_lines_after_pausing, old_filtered_lines, filter_string)
 
         # add highlighting information with highlight string
         highlight_string = log_view.get_highlight_string()
-        highlighted_text_list, append = _highlight_text(highlight_string, old_filtered_lines, new_filtered_lines)
+        highlighted_text_list, append, set_highlight_highlight_color, set_highlight_default_color = _highlight_text(highlight_string, old_filtered_lines, new_filtered_lines)
 
-        # print highlighted text
+        # determine final append
         append = False if filter_reprint == True else append
-        _display_highlighted_text(highlighted_text_list, append)
 
         # update state
         old_raw_log_lines = old_raw_log_lines.copy() + new_lines
         old_filtered_lines = old_filtered_lines.copy() + new_filtered_lines
         last_log_gui_filter_update_date = datetime.datetime.now()
 
+        return {
+            'highlighted_text_list': highlighted_text_list,
+            'append': append,
+            'set_filter_highlight_color': set_filter_highlight_color,
+            'set_filter_default_color': set_filter_default_color,
+            'set_highlight_highlight_color': set_highlight_highlight_color,
+            'set_highlight_default_color': set_highlight_default_color
+        }
 
-    return update_log_text
+    def display_log_update(update_info):
+        """
+        Display the processed log update
+        """
+        highlighted_text_list = update_info['highlighted_text_list']
+        append = update_info['append']
+        if update_info['set_filter_highlight_color']:
+            log_view.set_highlight_color_for_input_widget("-FILTER-")
+        if update_info['set_filter_default_color']:
+            log_view.set_default_color_for_input_widget("-FILTER-")
+        if update_info['set_highlight_highlight_color']:
+            log_view.set_highlight_color_for_input_widget("-HIGHLIGHT-")
+        if update_info['set_highlight_default_color']:
+            log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
+        if append == False:
+            log_view.clear_log()
+        log_view.insert_highlighted_text(highlighted_text_list)
+
+    def clear_log():
+        global old_raw_log_lines, old_filtered_lines, old_lines_after_pausing
+        old_raw_log_lines = []
+        old_filtered_lines = []
+        old_lines_after_pausing = []
+        log_view.update_log('', append=False)
+
+    return {
+        'process': process_log_text,
+        'display': display_log_update,
+        'clear': clear_log
+    }
 
 def get_last_log_gui_filter_update_date():
     return last_log_gui_filter_update_date

@@ -67,8 +67,10 @@ class RTTViewer:
             window=self._window
         )
 
-        # Create update closure
-        self.update_log_text = log_controller.create_update_log_text_closure(self.log_view)
+        # Create log handler
+        self.log_handler = log_controller.create_log_processor_and_displayer(self.log_view)
+        self.display_queue = queue.Queue()
+        self.update_log_text = lambda text: self.display_queue.put(self.log_handler['process'](text))
 
         self.demo = demo
 
@@ -80,18 +82,27 @@ class RTTViewer:
         self._window['-DISCONNECT-'].update(disabled=not connected)
         #self._window['-PAUSE-'].update(disabled=not connected)
 
-    def _process_log_queue(self):
-        while not self._rtt_handler.log_queue.empty():
+    def _log_processing_thread(self):
+        while True:
             try:
-                line = self._rtt_handler.log_queue.get_nowait()
-                # Use the update closure to process and display each line
-                self.update_log_text(line)
+                line = self._rtt_handler.log_queue.get(timeout=0.1)
+                update_info = self.log_handler['process'](line)
+                self.display_queue.put(update_info)
+            except queue.Empty:
+                pass
+
+    def _process_display_queue(self):
+        while not self.display_queue.empty():
+            try:
+                update_info = self.display_queue.get_nowait()
+                self.log_handler['display'](update_info)
             except queue.Empty:
                 pass
 
         # call log gui update at least once per second
         if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
-            self.update_log_text("")
+            update_info = self.log_handler['process']("")
+            self.log_handler['display'](update_info)
 
     def _filter_mcu_list(self, filter_string):
         if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
@@ -117,6 +128,10 @@ class RTTViewer:
 
     def run(self):
         self.update_log_text('')
+
+        # Start log processing thread
+        processing_thread = threading.Thread(target=self._log_processing_thread, daemon=True)
+        processing_thread.start()
 
         if self.demo:
             self._update_gui_status(True)
@@ -153,21 +168,23 @@ class RTTViewer:
                     self._rtt_handler.disconnect()
                     self._update_gui_status(False)
                 if event == '-CLEAR-':
-                    self._window['-LOG-'].update('', append=False)
+                    self.log_handler['clear']()
                     log_controller.clear_logs()
                 if event in ('-FILTER-', '-HIGHLIGHT-'):
                     # Update the log display when filter or highlight changes
-                    self.update_log_text("")
+                    update_info = self.log_handler['process']("")
+                    self.display_queue.put(update_info)
                 if event == '-PAUSE-':
                     # Toggle pause state
                     current_text = self._window['-PAUSE-'].GetText()
                     new_text = 'Unpause' if current_text == 'Pause' else 'Pause'
                     self._window['-PAUSE-'].update(new_text)
                     # Trigger update to show accumulated messages if unpaused
-                    self.update_log_text("")
+                    update_info = self.log_handler['process']("")
+                    self.display_queue.put(update_info)
 
                 # Update log
-                self._process_log_queue()
+                self._process_display_queue()
         finally:
             self._rtt_handler.disconnect()
             self._window.close()
