@@ -23,10 +23,14 @@ class RTTViewer:
         self._layout = [
             [sg.Text('Python RTT GUI', size=(30, 1), justification='center')],
             [sg.Column([
-                [sg.Text('MCU Chip Name:'),
+                [sg.Text('MCU Chip Name:', size=(14, 1)),
                  sg.Text("", size=(1, 1)),  # horizontal spacer
                  sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
-                          key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)]
+                          key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)],
+                [sg.Text('Interface:', size=(14, 1)),
+                 sg.Text("", size=(1, 1)),  # horizontal spacer
+                 sg.Combo(['SWD', 'JTAG'], default_value='SWD',
+                          key='-INTERFACE-', size=(10, 1), auto_size_text=False)]
             ])],
             [sg.Output(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
             [sg.Column([
@@ -160,7 +164,8 @@ class RTTViewer:
                 if event == '-CONNECT-':
                     try:
                         selected_mcu = self._window['-MCU-'].get()
-                        if self._rtt_handler.connect(selected_mcu, print_function=self.update_log_text):
+                        selected_interface = self._window['-INTERFACE-'].get()
+                        if self._rtt_handler.connect(selected_mcu, interface=selected_interface, print_function=self.update_log_text):
                             self._update_gui_status(True)
                     except Exception as e:
                         sg.popup_error(str(e))

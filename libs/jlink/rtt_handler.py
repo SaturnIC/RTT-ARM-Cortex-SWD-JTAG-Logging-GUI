@@ -12,12 +12,13 @@ class RTTHandler:
         self._rtt_thread = None
         self._buffer = ""
 
-    def connect(self, mcu_name, block_address=None, print_function = None):
+    def connect(self, mcu_name, interface='SWD', block_address=None, print_function = None):
         """
         Connect to the specified MCU and start RTT.
 
         Args:
             mcu_name (str): Name of the MCU to connect to.
+            interface (str): Interface to use ('SWD' or 'JTAG').
             block_address (int, optional): Address of the RTT control block.
 
         Returns:
@@ -25,8 +26,13 @@ class RTTHandler:
         """
         try:
             self._jlink.open()
-            print_function("connecting to %s...\n" % mcu_name)
-            self._jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
+            print_function("connecting to %s via %s...\n" % (mcu_name, interface))
+            if interface == 'SWD':
+                self._jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
+            elif interface == 'JTAG':
+                self._jlink.set_tif(pylink.enums.JLinkInterfaces.JTAG)
+            else:
+                raise ValueError(f"Unsupported interface: {interface}")
             self._jlink.connect(mcu_name)
             print_function("connected, starting RTT...\n")
             self._jlink.rtt_start(block_address)
