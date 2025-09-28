@@ -108,7 +108,7 @@ class RTTViewer:
                 self.log_view.display_log_update(update_info)
                 count += 1
             except queue.Empty:
-                pass
+                break
 
         # call log gui update at least once per second
         if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
