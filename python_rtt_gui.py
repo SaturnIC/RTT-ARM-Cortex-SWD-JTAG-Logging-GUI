@@ -100,11 +100,11 @@ class RTTViewer:
 
     def _process_display_queue(self):
         count = 0
-        max_per_call = 100  # Limit to 100 lines per GUI update to prevent overload
+        max_per_call = 1  # Limit to 100 lines per GUI update to prevent overload
         while not self.display_queue.empty() and count < max_per_call:
             try:
                 update_info = self.display_queue.get_nowait()
-                self.log_handler['display'](update_info)
+                self.log_view.display_log_update(update_info)
                 count += 1
             except queue.Empty:
                 pass
