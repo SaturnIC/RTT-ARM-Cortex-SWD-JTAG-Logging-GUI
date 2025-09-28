@@ -246,24 +246,6 @@ def create_log_processor_and_displayer(log_view):
             'set_highlight_default_color': set_highlight_default_color
         }
 
-    def display_log_update(update_info):
-        """
-        Display the processed log update
-        """
-        highlighted_text_list = update_info['highlighted_text_list']
-        append = update_info['append']
-        if update_info['set_filter_highlight_color']:
-            log_view.set_highlight_color_for_input_widget("-FILTER-")
-        if update_info['set_filter_default_color']:
-            log_view.set_default_color_for_input_widget("-FILTER-")
-        if update_info['set_highlight_highlight_color']:
-            log_view.set_highlight_color_for_input_widget("-HIGHLIGHT-")
-        if update_info['set_highlight_default_color']:
-            log_view.set_default_color_for_input_widget("-HIGHLIGHT-")
-        if append == False:
-            log_view.clear_log()
-        log_view.insert_highlighted_text(highlighted_text_list)
-
     def clear_log():
         global old_raw_log_lines, old_filtered_lines, old_lines_after_pausing
         old_raw_log_lines = []
@@ -273,7 +255,6 @@ def create_log_processor_and_displayer(log_view):
 
     return {
         'process': process_log_text,
-        'display': display_log_update,
         'clear': clear_log
     }
 

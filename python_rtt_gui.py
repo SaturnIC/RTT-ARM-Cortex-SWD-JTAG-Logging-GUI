@@ -112,7 +112,7 @@ class RTTViewer:
         # call log gui update at least once per second
         if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
             update_info = self.log_handler['process']("")
-            self.log_handler['display'](update_info)
+            self.log_view.display_log_update(update_info)
 
     def _filter_mcu_list(self, filter_string):
         if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:

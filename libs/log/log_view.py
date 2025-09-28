@@ -54,3 +54,21 @@ class LogView:
 
     def is_log_paused(self):
         return True if (self.pause_button_widget.GetText() == "Unpause") else False
+
+    def display_log_update(self, update_info):
+        """
+        Display the processed log update
+        """
+        highlighted_text_list = update_info['highlighted_text_list']
+        append = update_info['append']
+        if update_info['set_filter_highlight_color']:
+            self.set_highlight_color_for_input_widget("-FILTER-")
+        if update_info['set_filter_default_color']:
+            self.set_default_color_for_input_widget("-FILTER-")
+        if update_info['set_highlight_highlight_color']:
+            self.set_highlight_color_for_input_widget("-HIGHLIGHT-")
+        if update_info['set_highlight_default_color']:
+            self.set_default_color_for_input_widget("-HIGHLIGHT-")
+        if append == False:
+            self.clear_log()
+        self.insert_highlighted_text(highlighted_text_list)
