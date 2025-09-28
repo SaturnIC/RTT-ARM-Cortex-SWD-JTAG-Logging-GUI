@@ -97,6 +97,7 @@ class RTTViewer:
                 self.display_queue.put(update_info)
             except queue.Empty:
                 pass
+            time.sleep(0.01)
 
     def _process_display_queue(self):
         count = 0
@@ -151,7 +152,7 @@ class RTTViewer:
         try:
             # GUI event loop
             while True:
-                time.sleep(0.001)
+                time.sleep(0.01)
 
                 # Check MCU filter
                 if self.mcu_filter_string != "":

@@ -79,9 +79,9 @@ class RTTHandler:
                     else:
                         # Incomplete data, accumulate in buffer
                         self._buffer += latin_string
-                time.sleep(0.1)
             except pylink.JLinkException:
                 break
+            time.sleep(0.1)
 
     def get_supported_mcus(self):
         """
