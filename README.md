@@ -1,37 +1,50 @@
-# Python RTT GUI
-![RTT GUI](./docs/python_rtt_gui.png)
+# ARM Cortex SWD RTT GUI
+![RTT GUI Screenshot](./docs/python_rtt_gui.png)
+
+**Open-source Python GUI for ARM Cortex SWD Debug Channel**
+
+This project provides a Python-based GUI interface for SEGGER's Real-Time Transfer (RTT) debug protocol, enabling direct communication with ARM Cortex-based microcontrollers via J-Link debug probes. It replaces traditional debug channels (like UART) with the efficient SWD/SWO interface without requiring intermediary applications.
+
+As one of the few projects that directly interfaces with J-Link using Segger's Python wrapper (`pylink`) to receive RTT messages, it displays real-time logs from embedded targets with filtering and highlighting capabilities. Since messages are processed in Python, this foundation can be extended to support advanced features like data plotting and analysis - capabilities not available in SEGGER's standard RTT applications.
+
 
 This project serves as a wrapper for SEGGER Real-Time Transfer (RTT) debug channel,
-demonstrating how to replace clunky classical channels like UART with lean and mean SWD, SWO for ARM MCUs
+demonstrating how to replace clunky classical MCU debug channels like UART with lean and mean SWD, SWO
+for ARM MCUs
 without the need for any intermediary applications.
 
 This project can be used as a foundation to create a custom debug communication tool for ARM MCU development.
 
 The documentation and examples in pylink, SEGGER's Python wrapper, are severely lacking when it comes to using the RTT channel, so this project may also serve as a guide to help leverage pylink for RTT.
 
-## Features
-- Connects to MCUs using the J-Link debugger directly via J-Link drivers, eliminating the need for intermediary software such as RTTViewer.
-- Displays debug communication live within the GUI.
-- Provides log filtering and highlighting functionality.
-- Supports most MCUs through a simple filtering and selection interface.
-- Includes status monitoring and connection management.
+## Key Features
+- Direct J-Link connection using native drivers (no RTTViewer required)
+- Real-time display of debug communication
+- Log filtering and message highlighting
+- Broad MCU support through intuitive selection interface
+- Connection status monitoring and management
+- Extensible architecture for custom processing (plotting, analysis, etc.)
 
 ## Prerequisites
+
+### Host Software
 - Python 3.8+ (https://www.python.org/)
-- J-Link software suite installed (https://www.segger.com/downloads/jlink)
-- Required Python packages:
+- SEGGER J-Link Software ([Download](https://www.segger.com/downloads/jlink))
+- Required Python packages (Defined in requirements.txt file):
   - FreeSimpleGUI
   - pylink (Segger's J-Link Python wrapper)
 
-### Use RTTViewer in Embedded Target
-- RTT source code is available in the J-Link Software and Documentation Pack under `JLink/Samples/RTT`.
-- Include this code in your embedded project and use the `SEGGER_RTT_printf` function to print log messages to the JLink host:
-  ```C
-  # include SEGGER_RTT.h
+### Embedded Target Setup
+Include RTT in your firmware using the source code from `JLink/Samples/RTT` (included in J-Link installation):
+```c
+#include "SEGGER_RTT.h"
 
-  SEGGER_RTT_SetTerminal(0);
-  SEGGER_RTT_printf(0, "%s\n", "Hello from embedded MCU");
-  ```
+void main() {
+    SEGGER_RTT_Init();
+    SEGGER_RTT_SetTerminal(0);
+    SEGGER_RTT_printf(0, "System started\n");
+}
+```
 
 ## GUI Installation
 
@@ -51,20 +64,29 @@ The documentation and examples in pylink, SEGGER's Python wrapper, are severely 
 
 ## Usage
 
-1. Run the application:
+### Start Logging
+1. Launch the application:
    ```bash
    python python_rtt_gui.py
    ```
 
 2. Select your target MCU from the dropdown list.
+   Filter MCU list by typing a matching substring in the MCU dropdown widget.
 
 3. Click "Connect" to establish a connection.
 
-4. Use the "Disconnect" button to terminate the connection.
+### Highlight Logs
+Enter text in highlight box to highlight matching messages
 
-5. Use the "Clear" button to reset the log display.
+### Filter Logs
+Filter log messages by entering a filter substring in the filter box
 
-6. Filter MCUs by typing in the MCU selection field.
+### Disconnect From MCU
+Use the "Disconnect" button to terminate the connection.
+
+### Clear the Log View
+Use the "Clear" button to reset the log display.
+
 
 ## License
 
@@ -76,4 +98,4 @@ For questions, issues, or contributions, please contact the maintainer
 
 ---
 
-**Note:** Make sure J-Link is properly installed and accessible on your system. The application requires J-Link's Python wrapper (`pylink`) to communicate with the debugger.
+**Note:** Requires properly installed J-Link drivers. The application communicates directly with debug hardware using SEGGER's `pylink` Python wrapper.
