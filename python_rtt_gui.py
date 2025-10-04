@@ -63,11 +63,7 @@ class RTTViewer:
 
         # Initialize GUI state
         self._update_gui_status(False)
-        # Set default MCU to DEMO_MCU when in demo mode
-        if demo:
-            self.current_mcu = 'DEMO_MCU'
-        else:
-            self.current_mcu = 'STM32F427II'  # Track the currently selected MCU
+
         self.mcu_filter_string = ''
         self.mcu_list_last_update_time = time.time()
 
