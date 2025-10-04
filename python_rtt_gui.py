@@ -6,6 +6,7 @@ import argparse
 import libs.log.log_controller as log_controller
 from datetime import datetime
 from libs.jlink.rtt_handler import RTTHandler
+from libs.jlink.demo_rtt_handler import DemoRTTHandler
 from libs.log.log_view import LogView
 
 # constants
@@ -14,7 +15,10 @@ FILTER_APPLICATION_WAIT_TIME_s = 2
 class RTTViewer:
     def __init__(self, demo=False):
         # Initialize RTT Handler
-        self._rtt_handler = RTTHandler()
+        if demo:
+            self._rtt_handler = DemoRTTHandler()
+        else:
+            self._rtt_handler = RTTHandler()
         self.supported_mcu_list = self._rtt_handler.get_supported_mcus()
         # GUI setup
         sg.theme('Dark Gray 13')
@@ -122,32 +126,12 @@ class RTTViewer:
                         if input_text in mcu]
             self._window['-MCU-'].update(values=filtered)
 
-    def _demo_loop(self):
-        demo_messages = [
-            "[INFO] System initialized",
-            "[DEBUG] Connecting to peripherals",
-            "[WARN] Low battery detected",
-            "[ERROR] Failed to read sensor data",
-            "[INFO] Processing data",
-            "[DEBUG] Update complete",
-        ]
-        while True:
-            for msg in demo_messages:
-                self._rtt_handler.log_queue.put(msg + '\n')
-                time.sleep(2)
-            time.sleep(4)
-
     def run(self):
         self.update_log_text('')
 
         # Start log processing thread
         processing_thread = threading.Thread(target=self._log_processing_thread, daemon=True)
         processing_thread.start()
-
-        if self.demo:
-            self._update_gui_status(True)
-            demo_thread = threading.Thread(target=self._demo_loop, daemon=True)
-            demo_thread.start()
 
         try:
             # GUI event loop
