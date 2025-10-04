@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import queue
 
-class BaseRTTHandler(ABC):
+class RTTHandlerInterface(ABC):
     """
     Abstract base class for RTT handlers.
     Defines the interface that all RTT handlers must implement.

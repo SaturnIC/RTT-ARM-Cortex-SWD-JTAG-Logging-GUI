@@ -1,9 +1,9 @@
 import threading
 import queue
 import time
-from libs.jlink.base_rtt_handler import BaseRTTHandler
+from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 
-class DemoRTTHandler(BaseRTTHandler):
+class DemoRTTHandler(RTTHandlerInterface):
     def __init__(self):
         self._log_queue = queue.Queue()
         self._connected = True  # Demo mode is always "connected"

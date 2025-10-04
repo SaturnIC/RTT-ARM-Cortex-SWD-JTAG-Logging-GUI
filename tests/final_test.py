@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test to verify the refactored code with inheritance works correctly
+Final test to verify the interface-based approach works correctly
 """
 
 import sys
@@ -15,15 +15,15 @@ from libs.jlink.rtt_handler import RTTHandler
 from libs.jlink.demo_rtt_handler import DemoRTTHandler
 from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 
-def test_inheritance():
-    print("=== Testing Inheritance ===")
+def test_interface():
+    print("=== Testing Interface ===")
     
-    # Test that both handlers inherit from RTTHandlerInterface
+    # Test that both handlers implement the interface
     demo_handler = DemoRTTHandler()
     rtt_handler = RTTHandler()
     
-    print(f"DemoRTTHandler inherits from RTTHandlerInterface: {isinstance(demo_handler, RTTHandlerInterface)}")
-    print(f"RTTHandler inherits from RTTHandlerInterface: {isinstance(rtt_handler, RTTHandlerInterface)}")
+    print(f"DemoRTTHandler implements RTTHandlerInterface: {isinstance(demo_handler, RTTHandlerInterface)}")
+    print(f"RTTHandler implements RTTHandlerInterface: {isinstance(rtt_handler, RTTHandlerInterface)}")
     
     # Test that they both have required methods
     required_methods = ['connect', 'disconnect', 'get_supported_mcus', 'is_connected']
@@ -63,18 +63,18 @@ def test_normal_mode():
     return is_stm32_default
 
 if __name__ == "__main__":
-    print("Testing refactored code with inheritance...")
+    print("Testing final implementation with interface-based approach...")
     
-    inheritance_ok = test_inheritance()
+    interface_ok = test_interface()
     demo_ok = test_demo_mode()
     normal_ok = test_normal_mode()
     
     print(f"\n=== Results ===")
-    print(f"Inheritance test passed: {inheritance_ok}")
+    print(f"Interface test passed: {interface_ok}")
     print(f"Demo mode test passed: {demo_ok}")
     print(f"Normal mode test passed: {normal_ok}")
     
-    if inheritance_ok and demo_ok and normal_ok:
+    if interface_ok and demo_ok and normal_ok:
         print("✓ All tests passed!")
         sys.exit(0)
     else:

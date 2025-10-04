@@ -7,7 +7,7 @@ import libs.log.log_controller as log_controller
 from datetime import datetime
 from libs.jlink.rtt_handler import RTTHandler
 from libs.jlink.demo_rtt_handler import DemoRTTHandler
-from libs.jlink.base_rtt_handler import BaseRTTHandler
+from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 from libs.log.log_view import LogView
 
 # constants

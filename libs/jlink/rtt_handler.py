@@ -2,9 +2,9 @@ import pylink
 import threading
 import queue
 import time
-from libs.jlink.base_rtt_handler import BaseRTTHandler
+from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 
-class RTTHandler(BaseRTTHandler):
+class RTTHandler(RTTHandlerInterface):
     def __init__(self):
         self._jlink = pylink.JLink()
         self._supported_mcu_list = [self._jlink.supported_device(i).name.upper() for i in range(self._jlink.num_supported_devices())]
