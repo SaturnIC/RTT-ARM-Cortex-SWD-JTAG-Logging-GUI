@@ -7,7 +7,6 @@ This project provides a Python-based GUI interface for SEGGER's Real-Time Transf
 
 As one of the few projects that directly interfaces with J-Link using Segger's Python wrapper (`pylink`) to receive RTT messages, it displays real-time logs from embedded targets with filtering and highlighting capabilities. Since messages are processed in Python, this foundation can be extended to support advanced features like data plotting and analysis - capabilities not available in SEGGER's standard RTT applications.
 
-
 This project serves as a wrapper for SEGGER Real-Time Transfer (RTT) debug channel,
 demonstrating how to replace clunky classical MCU debug channels like UART with lean and mean SWD, SWO
 for ARM MCUs
@@ -16,6 +15,23 @@ without the need for any intermediary applications.
 This project can be used as a foundation to create a custom debug communication tool for ARM MCU development.
 
 The documentation and examples in pylink, SEGGER's Python wrapper, are severely lacking when it comes to using the RTT channel, so this project may also serve as a guide to help leverage pylink for RTT.
+
+## Table of Contents
+- [ARM Cortex SWD RTT GUI](#arm-cortex-swd-rtt-gui)
+  - [Key Features](#key-features)
+  - [Prerequisites](#prerequisites)
+    - [Host Software](#host-software)
+    - [Embedded Target Setup](#embedded-target-setup)
+  - [GUI Installation](#gui-installation)
+  - [Usage](#usage)
+    - [Start Logging](#start-logging)
+    - [Highlight Logs](#highlight-logs)
+    - [Filter Logs](#filter-logs)
+    - [Disconnect From MCU](#disconnect-from-mcu)
+    - [Clear the Log View](#clear-the-log-view)
+  - [License](#license)
+  - [Contact](#contact)
+
 
 ## Key Features
 - Direct J-Link connection using native drivers (no RTTViewer required)
