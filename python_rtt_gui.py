@@ -106,19 +106,27 @@ class RTTViewer:
 
     def _process_display_queue(self):
         count = 0
-        max_per_call = 1  # Limit to 100 lines per GUI update to prevent overload
+        max_per_call = 20  # Limit to 100 lines per GUI update to prevent overload
+        highlighted_log_lines = []
         while not self.display_queue.empty() and count < max_per_call:
             try:
                 update_info = self.display_queue.get_nowait()
-                self.log_view.display_log_update(update_info)
+                highlighted_log_lines += update_info['highlighted_text_list']
                 count += 1
+                if update_info["append"] == False:
+                    break
             except queue.Empty:
                 break
-
-        # call log gui update at least once per second
-        if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
-            update_info = self.log_handler['process']("")
+        if highlighted_log_lines != []:
+            # print processed lines
+            highlighted_log_lines.append((f"count on print: {count}", False))
+            update_info['highlighted_text_list'] = highlighted_log_lines
             self.log_view.display_log_update(update_info)
+        else:
+            # call log gui update at least once per second
+            if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
+                update_info = self.log_handler['process']("")
+                self.log_view.display_log_update(update_info)
 
     def _filter_mcu_list(self, filter_string):
         if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
@@ -137,7 +145,7 @@ class RTTViewer:
         try:
             # GUI event loop
             while True:
-                time.sleep(0.01)
+                time.sleep(0.05)
 
                 # Check MCU filter
                 if self.mcu_filter_string != "":

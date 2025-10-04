@@ -54,20 +54,20 @@ class DemoRTTHandler(RTTHandlerInterface):
         Generate demo messages at regular intervals.
         """
         demo_messages = [
-            "[INFO] System initialized",
-            "[DEBUG] Connecting to peripherals",
-            "[WARN] Low battery detected",
-            "[ERROR] Failed to read sensor data",
-            "[INFO] Processing data",
-            "[DEBUG] Update complete",
+            "1 [INFO] System initialized",
+            "2 [DEBUG] Connecting to peripherals",
+            "3 [WARN] Low battery detected",
+            "4 [ERROR] Failed to read sensor data",
+            "5 [INFO] Processing data",
+            "6 [DEBUG] Update complete",
         ]
         while not self._stop_demo.is_set():
             for msg in demo_messages:
                 self._log_queue.put(msg + '\n')
-                if self._stop_demo.wait(timeout=2):
+                if self._stop_demo.wait(timeout=0.03):
                     break
             # Wait a bit between message cycles
-            if self._stop_demo.wait(timeout=4):
+            if self._stop_demo.wait(timeout=0.03):
                 break
 
     def get_supported_mcus(self):

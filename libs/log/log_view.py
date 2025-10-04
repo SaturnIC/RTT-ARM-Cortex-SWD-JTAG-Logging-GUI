@@ -59,16 +59,22 @@ class LogView:
         """
         Display the processed log update
         """
+
+        # Set color highlighting of filter and highlight string input fields
         highlighted_text_list = update_info['highlighted_text_list']
         append = update_info['append']
         if update_info['set_filter_highlight_color']:
             self.set_highlight_color_for_input_widget("-FILTER-")
-        if update_info['set_filter_default_color']:
+        elif update_info['set_filter_default_color']:
             self.set_default_color_for_input_widget("-FILTER-")
         if update_info['set_highlight_highlight_color']:
             self.set_highlight_color_for_input_widget("-HIGHLIGHT-")
-        if update_info['set_highlight_default_color']:
+        elif update_info['set_highlight_default_color']:
             self.set_default_color_for_input_widget("-HIGHLIGHT-")
+
+        # Reset log
         if append == False:
             self.clear_log()
+
+        # Inset log lines in log widget
         self.insert_highlighted_text(highlighted_text_list)

@@ -238,12 +238,12 @@ def create_log_processor_and_displayer(log_view):
         last_log_gui_filter_update_date = datetime.datetime.now()
 
         return {
-            'highlighted_text_list': highlighted_text_list,
-            'append': append,
-            'set_filter_highlight_color': set_filter_highlight_color,
-            'set_filter_default_color': set_filter_default_color,
-            'set_highlight_highlight_color': set_highlight_highlight_color,
-            'set_highlight_default_color': set_highlight_default_color
+            "highlighted_text_list": highlighted_text_list,
+            "append": append,
+            "set_filter_highlight_color": set_filter_highlight_color,
+            "set_filter_default_color": set_filter_default_color,
+            "set_highlight_highlight_color": set_highlight_highlight_color,
+            "set_highlight_default_color": set_highlight_default_color
         }
 
     def clear_log():
@@ -251,11 +251,11 @@ def create_log_processor_and_displayer(log_view):
         old_raw_log_lines = []
         old_filtered_lines = []
         old_lines_after_pausing = []
-        log_view.update_log('', append=False)
+        log_view.update_log("", append=False)
 
     return {
-        'process': process_log_text,
-        'clear': clear_log
+        "process": process_log_text,
+        "clear": clear_log
     }
 
 def get_last_log_gui_filter_update_date():
