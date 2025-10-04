@@ -1,5 +1,5 @@
 # ARM Cortex SWD RTT GUI
-![RTT GUI Screenshot](./docs/python_rtt_gui.png)
+![RTT GUI Screenshot](./docs/arm_cortex_rtt_gui_wt.png)
 
 **Open-source Python GUI for ARM Cortex SWD Debug Channel**
 

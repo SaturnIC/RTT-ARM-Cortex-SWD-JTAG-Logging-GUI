@@ -26,7 +26,7 @@ class RTTViewer:
 
         # Create layout with new filter, highlight, and pause elements
         self._layout = [
-            [sg.Text('Python RTT GUI', size=(20, 1), justification='center')],
+            [sg.Text('ARM Cortex RTT GUI', size=(20, 1), justification='center')],
             [sg.Frame('Configuration', [
                 [sg.Text('MCU Chip Name:', size=(14, 1)),
                 sg.Text("", size=(1, 1)),  # horizontal spacer
@@ -56,7 +56,7 @@ class RTTViewer:
             ], expand_x=True, expand_y=True, pad=((10,10),(10,20)))]
         ]
 
-        self._window = sg.Window('Python RTT GUI', self._layout, finalize=True, resizable=True)
+        self._window = sg.Window('ARM Cortex RTT GUI', self._layout, finalize=True, resizable=True)
 
         # Set minimum size
         self._window.set_min_size((800, 600))
