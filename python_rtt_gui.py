@@ -119,7 +119,7 @@ class RTTViewer:
                 break
         if highlighted_log_lines != []:
             # print processed lines
-            highlighted_log_lines.append((f"count on print: {count}", False))
+            #highlighted_log_lines.append((f"count on print: {count}", False))
             update_info['highlighted_text_list'] = highlighted_log_lines
             self.log_view.display_log_update(update_info)
         else:
