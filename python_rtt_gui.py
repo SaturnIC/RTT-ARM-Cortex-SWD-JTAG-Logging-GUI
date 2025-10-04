@@ -29,7 +29,7 @@ class RTTViewer:
             [sg.Frame('Configuration', [
                 [sg.Text('MCU Chip Name:', size=(14, 1)),
                 sg.Text("", size=(1, 1)),  # horizontal spacer
-                sg.Combo(self.supported_mcu_list, default_value='STM32F427II',
+                sg.Combo(self.supported_mcu_list, default_value='DEMO_MCU' if demo else 'STM32F427II',
                         key='-MCU-', size=(20, 1), enable_events=True, auto_size_text=False)],
                 [sg.Text('Interface:', size=(14, 1)),
                 sg.Text("", size=(1, 1)),  # horizontal spacer
@@ -62,7 +62,11 @@ class RTTViewer:
 
         # Initialize GUI state
         self._update_gui_status(False)
-        self.current_mcu = 'STM32F427II'  # Track the currently selected MCU
+        # Set default MCU to DEMO_MCU when in demo mode
+        if demo:
+            self.current_mcu = 'DEMO_MCU'
+        else:
+            self.current_mcu = 'STM32F427II'  # Track the currently selected MCU
         self.mcu_filter_string = ''
         self.mcu_list_last_update_time = time.time()
 
