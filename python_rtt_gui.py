@@ -82,7 +82,7 @@ class RTTViewer:
         # Create log handler
         self.log_handler = log_controller.create_log_processor_and_displayer(self.log_view)
         self.display_queue = queue.Queue()
-        self.update_log_text = lambda text: self.display_queue.put(self.log_handler['process'](text))
+        self.update_log_text = lambda text: self.display_queue.put(self.log_handler["process"](text))
 
         self.demo = demo
 
@@ -98,7 +98,7 @@ class RTTViewer:
         while True:
             try:
                 line = self._rtt_handler.log_queue.get(timeout=0.1)
-                update_info = self.log_handler['process'](line)
+                update_info = self.log_handler["process"](line)
                 self.display_queue.put(update_info)
             except queue.Empty:
                 pass
@@ -108,6 +108,7 @@ class RTTViewer:
         count = 0
         max_per_call = 20  # Limit to 100 lines per GUI update to prevent overload
         highlighted_log_lines = []
+        update_info = []
         while not self.display_queue.empty() and count < max_per_call:
             try:
                 update_info = self.display_queue.get_nowait()
@@ -117,7 +118,7 @@ class RTTViewer:
                     break
             except queue.Empty:
                 break
-        if highlighted_log_lines != []:
+        if update_info != []:
             # print processed lines
             #highlighted_log_lines.append((f"count on print: {count}", False))
             update_info['highlighted_text_list'] = highlighted_log_lines
@@ -125,7 +126,7 @@ class RTTViewer:
         else:
             # call log gui update at least once per second
             if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
-                update_info = self.log_handler['process']("")
+                update_info = self.log_handler["process"]("")
                 self.log_view.display_log_update(update_info)
 
     def _filter_mcu_list(self, filter_string):
@@ -134,6 +135,44 @@ class RTTViewer:
             filtered = [mcu for mcu in self.supported_mcu_list
                         if input_text in mcu]
             self._window['-MCU-'].update(values=filtered)
+
+    def handle_events(self, event, values):
+        retVal = True
+        if event == sg.WIN_CLOSED:
+            retVal = False
+        if event == '-MCU-':
+            self.current_mcu = values['-MCU-']
+            self.mcu_filter_string = ""
+        if event == '-MCU-KEYRELEASE-':
+            self.mcu_filter_string = values['-MCU-']
+            self.mcu_list_last_update_time = time.time()
+        if event == '-CONNECT-':
+            try:
+                selected_mcu = self._window['-MCU-'].get()
+                selected_interface = self._window['-INTERFACE-'].get()
+                if self._rtt_handler.connect(selected_mcu, interface=selected_interface, print_function=self.update_log_text):
+                    self._update_gui_status(True)
+            except Exception as e:
+                sg.popup_error(str(e))
+        if event == '-DISCONNECT-':
+            self._rtt_handler.disconnect()
+            self._update_gui_status(False)
+        if event == '-CLEAR-':
+            self.log_handler['clear']()
+            log_controller.clear_log_data()
+        if event in ('-FILTER-', '-HIGHLIGHT-'):
+            # Update the log display when filter or highlight changes
+            update_info = self.log_handler["process"]("")
+            self.display_queue.put(update_info)
+        if event == '-PAUSE-':
+            # Toggle pause state
+            current_text = self._window['-PAUSE-'].GetText()
+            new_text = 'Unpause' if current_text == 'Pause' else 'Pause'
+            self._window['-PAUSE-'].update(new_text)
+            # Trigger update to show accumulated messages if unpaused
+            update_info = self.log_handler["process"]("")
+            self.display_queue.put(update_info)
+        return retVal
 
     def run(self):
         self.update_log_text('')
@@ -153,40 +192,11 @@ class RTTViewer:
 
                 # Check events
                 event, values = self._window.read(timeout=100)
-                if event == sg.WIN_CLOSED:
+                if self.handle_events(event, values) == False:
                     break
-                if event == '-MCU-':
-                    self.current_mcu = values['-MCU-']
-                    self.mcu_filter_string = ""
-                if event == '-MCU-KEYRELEASE-':
-                    self.mcu_filter_string = values['-MCU-']
-                    self.mcu_list_last_update_time = time.time()
-                if event == '-CONNECT-':
-                    try:
-                        selected_mcu = self._window['-MCU-'].get()
-                        selected_interface = self._window['-INTERFACE-'].get()
-                        if self._rtt_handler.connect(selected_mcu, interface=selected_interface, print_function=self.update_log_text):
-                            self._update_gui_status(True)
-                    except Exception as e:
-                        sg.popup_error(str(e))
-                if event == '-DISCONNECT-':
-                    self._rtt_handler.disconnect()
-                    self._update_gui_status(False)
-                if event == '-CLEAR-':
-                    self.log_handler['clear']()
-                    log_controller.clear_logs()
-                if event in ('-FILTER-', '-HIGHLIGHT-'):
-                    # Update the log display when filter or highlight changes
-                    update_info = self.log_handler['process']("")
-                    self.display_queue.put(update_info)
-                if event == '-PAUSE-':
-                    # Toggle pause state
-                    current_text = self._window['-PAUSE-'].GetText()
-                    new_text = 'Unpause' if current_text == 'Pause' else 'Pause'
-                    self._window['-PAUSE-'].update(new_text)
-                    # Trigger update to show accumulated messages if unpaused
-                    update_info = self.log_handler['process']("")
-                    self.display_queue.put(update_info)
+
+                # Handle widget highlighting
+                self.log_view.handle_widget_highlighting(log_controller.is_filter_input_active(), log_controller.is_highlight_input_active())
 
                 # Update log
                 self._process_display_queue()

@@ -17,6 +17,9 @@ class LogView:
         # store default colors
         self.default_background_color = sg.theme_input_background_color()
         self.default_text_color = sg.theme_input_text_color()
+        # input fields
+        self.last_filter_input_active = False
+        self.last_highlight_input_active = False
 
     def insert_colored_text(self, text, color):
         self.log_widget.Widget.tag_configure(color, foreground=color)
@@ -55,22 +58,27 @@ class LogView:
     def is_log_paused(self):
         return True if (self.pause_button_widget.GetText() == "Unpause") else False
 
+    def handle_coloring_of_input_widget(self, input_active, input_label):
+        if input_active:
+            self.set_highlight_color_for_input_widget(input_label)
+        else:
+            self.set_default_color_for_input_widget(input_label)
+    
+    def handle_widget_highlighting(self, filter_input_active, highlight_input_active):
+        if self.last_filter_input_active != filter_input_active:
+            self.last_filter_input_active = filter_input_active
+            self.handle_coloring_of_input_widget(filter_input_active, "-FILTER-")
+        if self.last_highlight_input_active != highlight_input_active:
+            self.last_highlight_input_active = highlight_input_active
+            self.handle_coloring_of_input_widget(highlight_input_active, "-HIGHLIGHT-")
+
     def display_log_update(self, update_info):
         """
         Display the processed log update
         """
-
-        # Set color highlighting of filter and highlight string input fields
+        # parse input dict
         highlighted_text_list = update_info['highlighted_text_list']
         append = update_info['append']
-        if update_info['set_filter_highlight_color']:
-            self.set_highlight_color_for_input_widget("-FILTER-")
-        elif update_info['set_filter_default_color']:
-            self.set_default_color_for_input_widget("-FILTER-")
-        if update_info['set_highlight_highlight_color']:
-            self.set_highlight_color_for_input_widget("-HIGHLIGHT-")
-        elif update_info['set_highlight_default_color']:
-            self.set_default_color_for_input_widget("-HIGHLIGHT-")
 
         # Reset log
         if append == False:
