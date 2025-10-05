@@ -11,7 +11,7 @@ This debug protocol provides direct communication with ARM Cortex-based microcon
 RTT removes the need for additional debug channels (like UART) by using the ARM Cortex SWD/JTAG interface.
 Unlike the slow and clunky UART debug channel the SWD, JTAG interface provides lean and mean debugging for ARM MCUs.
 
-This projects interfaces directly with J-Link probe drivers using Segger's Python wrapper `pylink`
+This project interfaces directly with J-Link probe drivers using Segger's Python wrapper `pylink`
 to receive RTT messages. It does not require any other intermediary software.
 
 The official documentation and examples for pylink, SEGGER's Python wrapper,
