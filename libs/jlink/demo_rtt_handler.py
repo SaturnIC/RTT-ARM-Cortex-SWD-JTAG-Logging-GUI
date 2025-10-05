@@ -4,8 +4,8 @@ import time
 from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 
 class DemoRTTHandler(RTTHandlerInterface):
-    def __init__(self):
-        self._log_queue = queue.Queue()
+    def __init__(self, log_processing_input_queue):
+        self._log_queue = log_processing_input_queue
         self._connected = True  # Demo mode is always "connected"
         self._demo_thread = None
         self._stop_demo = threading.Event()
@@ -63,7 +63,7 @@ class DemoRTTHandler(RTTHandlerInterface):
         ]
         while not self._stop_demo.is_set():
             for msg in demo_messages:
-                self._log_queue.put(msg + '\n')
+                self._log_queue.put({"line" : msg + '\n'})
                 if self._stop_demo.wait(timeout=0.03):
                     break
             # Wait a bit between message cycles

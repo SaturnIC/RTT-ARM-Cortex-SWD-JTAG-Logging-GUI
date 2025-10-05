@@ -5,15 +5,15 @@ import time
 from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 
 class RTTHandler(RTTHandlerInterface):
-    def __init__(self):
+    def __init__(self, log_processing_input_queue):
         self._jlink = pylink.JLink()
         self._supported_mcu_list = [self._jlink.supported_device(i).name.upper() for i in range(self._jlink.num_supported_devices())]
-        self._log_queue = queue.Queue()
+        self._log_queue = log_processing_input_queue
         self._connected = False
         self._rtt_thread = None
         self._buffer = ""
 
-    def connect(self, mcu_name, interface='SWD', block_address=None, print_function = None):
+    def connect(self, mcu_name, interface='SWD', block_address=None):
         """
         Connect to the specified MCU and start RTT.
 
@@ -27,7 +27,8 @@ class RTTHandler(RTTHandlerInterface):
         """
         try:
             self._jlink.open()
-            print_function("connecting to %s via %s...\n" % (mcu_name, interface))
+            line = "connecting to %s via %s...\n" % (mcu_name, interface)
+            self._log_queue.put({"line" : line  + '\n'})
             if interface == 'SWD':
                 self._jlink.set_tif(pylink.enums.JLinkInterfaces.SWD)
             elif interface == 'JTAG':
@@ -35,7 +36,7 @@ class RTTHandler(RTTHandlerInterface):
             else:
                 raise ValueError(f"Unsupported interface: {interface}")
             self._jlink.connect(mcu_name)
-            print_function("connected, starting RTT...\n")
+            self._log_queue.put({"line" : "connected, starting RTT...\n"})
             self._jlink.rtt_start(block_address)
             self._connected = True
 
@@ -75,7 +76,7 @@ class RTTHandler(RTTHandlerInterface):
                         lines = full_string.split('\n')
                         for line in lines:
                             if line:  # Skip empty lines
-                                self._log_queue.put(line + '\n')
+                                self._log_queue.put({"line" : line  + '\n'})
                         self._buffer = ""
                     else:
                         # Incomplete data, accumulate in buffer

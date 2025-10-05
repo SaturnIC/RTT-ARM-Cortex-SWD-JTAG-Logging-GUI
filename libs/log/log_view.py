@@ -1,6 +1,9 @@
+import time
 import tkinter as tk
 import FreeSimpleGUI as sg
 
+# Constants
+FILTER_APPLICATION_WAIT_TIME_s = 0.5
 COLOR_BLUE = 'blue'
 COLOR_HIGHLIGHT = 'LightGreen'
 COLOR_BLACK = 'black'
@@ -18,8 +21,12 @@ class LogView:
         self.default_background_color = sg.theme_input_background_color()
         self.default_text_color = sg.theme_input_text_color()
         # input fields
-        self.last_filter_input_active = False
-        self.last_highlight_input_active = False
+        self.last_filter_change_time = 0
+        self.last_highlight_change_time = 0
+        self.last_filter_input = ""
+        self.last_highlight_input = ""
+        self.active_highlight_string = ""
+        self.active_filter_string = ""
 
     def insert_colored_text(self, text, color):
         self.log_widget.Widget.tag_configure(color, foreground=color)
@@ -49,28 +56,43 @@ class LogView:
         self.window[gui_element_label].update(background_color=self.default_background_color)
         self.window[gui_element_label].update(text_color=self.default_text_color)
 
-    def get_filter_string(self):
-        return self.filter_input_widget.Get()
-
-    def get_highlight_string(self):
-        return self.highlight_input_widget.Get()
-
-    def is_log_paused(self):
-        return True if (self.pause_button_widget.GetText() == "Unpause") else False
-
     def handle_coloring_of_input_widget(self, input_active, input_label):
         if input_active:
             self.set_highlight_color_for_input_widget(input_label)
         else:
             self.set_default_color_for_input_widget(input_label)
     
-    def handle_widget_highlighting(self, filter_input_active, highlight_input_active):
-        if self.last_filter_input_active != filter_input_active:
-            self.last_filter_input_active = filter_input_active
-            self.handle_coloring_of_input_widget(filter_input_active, "-FILTER-")
-        if self.last_highlight_input_active != highlight_input_active:
-            self.last_highlight_input_active = highlight_input_active
-            self.handle_coloring_of_input_widget(highlight_input_active, "-HIGHLIGHT-")
+    def handle_widget_highlighting(self, filter_input, highlight_input):
+        retVal = {}
+        current_time = time.time()
+
+        # Handle change of input
+        if self.last_filter_input != filter_input:
+            self.last_filter_input = filter_input
+            self.last_filter_change_time = current_time
+            self.handle_coloring_of_input_widget(True, "-FILTER-")
+        if self.last_highlight_input != highlight_input:
+            self.last_highlight_input = highlight_input
+            self.last_highlight_change_time = current_time
+            self.handle_coloring_of_input_widget(True, "-HIGHLIGHT-")
+
+        # Handle application of changed input stings
+        ## highlight input widget
+        if (current_time - self.last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s) \
+           and (self.active_filter_string != self.last_filter_input):
+            # change timer expired for new filter string
+            self.active_filter_string = self.last_filter_input
+            self.handle_coloring_of_input_widget(False, "-FILTER-")
+            retVal["filter_string"] = self.active_filter_string
+        ## highlight input widget
+        if (current_time - self.last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s) \
+           and (self.active_highlight_string != self.last_highlight_input):
+            # change timer expired for new highlight string
+            self.active_highlight_string = self.last_highlight_input
+            self.handle_coloring_of_input_widget(False, "-HIGHLIGHT-")
+            retVal["highlight_string"] = self.active_highlight_string
+
+        return retVal
 
     def display_log_update(self, update_info):
         """

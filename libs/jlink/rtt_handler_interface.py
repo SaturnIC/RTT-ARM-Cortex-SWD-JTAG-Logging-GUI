@@ -7,8 +7,8 @@ class RTTHandlerInterface(ABC):
     Defines the interface that all RTT handlers must implement.
     """
     
-    def __init__(self):
-        self._log_queue = queue.Queue()
+    def __init__(self, log_processing_input_queue):
+        self._log_queue = log_processing_input_queue
         self._supported_mcu_list = []
     
     @abstractmethod

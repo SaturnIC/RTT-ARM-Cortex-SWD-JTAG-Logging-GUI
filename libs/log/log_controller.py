@@ -9,11 +9,7 @@ last_log_gui_filter_update_date = datetime.datetime.now()
 old_raw_log_lines = []
 old_filtered_lines = []
 old_lines_after_pausing = []
-highlight_input_active = False
-filter_input_active = False
 
-# Constants
-FILTER_APPLICATION_WAIT_TIME_s = 0.5
 GUI_MINIMUM_REFRESH_INTERVAL_s = 0.5
 
 def create_log_processor_and_displayer(log_view):
@@ -27,6 +23,9 @@ def create_log_processor_and_displayer(log_view):
     old_highlight_string = ""
     last_applied_highlight_string = ""
     old_pause_text_state = False
+    active_pause_string = ""
+    active_filter_string = ""
+    active_highlight_string = ""
 
     def _parse_new_text(new_text):
         pass
@@ -82,29 +81,17 @@ def create_log_processor_and_displayer(log_view):
         Handle filtering of log text
         """
         nonlocal old_filter_string, last_applied_filter_string
-        global last_filter_change_time, filter_input_active
-
-        # handle changed filter string
-        current_time = time.time()
-        if filter_string != old_filter_string:
-            old_filter_string = filter_string
-            last_filter_change_time = current_time
-            filter_input_active = True
+        global last_filter_change_time
 
         filter_reprint = False
-        if (last_applied_filter_string != filter_string) \
-            and (current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
+        if last_applied_filter_string != filter_string:
             # change filter string apply timeout expired
             last_applied_filter_string = filter_string
             new_filtered_lines = _apply_text_filter(last_applied_filter_string, old_log_lines + new_log_lines)
             old_filtered_lines = []
             filter_reprint = True
-            filter_input_active = False
         else:
-            if (filter_input_active and
-                current_time - last_filter_change_time > FILTER_APPLICATION_WAIT_TIME_s):
-                # remove input field coloring even if value didn't change
-                filter_input_active = False
+            # filter string did not change
             if new_log_lines != []:
                 new_filtered_lines = _apply_text_filter(last_applied_filter_string, new_log_lines)
                 old_filtered_lines = old_filtered_lines.copy()
@@ -112,7 +99,7 @@ def create_log_processor_and_displayer(log_view):
                 new_filtered_lines = []
                 old_filtered_lines = old_filtered_lines.copy()
 
-        return new_filtered_lines, old_filtered_lines, filter_reprint, filter_input_active
+        return new_filtered_lines, old_filtered_lines, filter_reprint
 
     def _clear_log_text():
         global old_lines_after_pausing
@@ -163,61 +150,54 @@ def create_log_processor_and_displayer(log_view):
         """
         # access variables of outer scopes
         nonlocal old_highlight_string, last_applied_highlight_string
-        global last_highlight_change_time, highlight_input_active
+        global last_highlight_change_time
 
         # init variables
         highlighted_list = []
-        append = False
-        highlight_string_changed = True if highlight_string != old_highlight_string else False
+        append = True
 
-        # handle changed highlight string
-        current_time = time.time()
-        if highlight_string != old_highlight_string:
-            # highlight string changed
-            old_highlight_string = highlight_string
-            last_highlight_change_time = current_time
-            highlight_input_active = True
-
-        if (current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s) \
-            and (last_applied_highlight_string != highlight_string):
-                # change timer expired for new highlight string
-                last_applied_highlight_string = highlight_string
-                highlighted_list = _assemble_changed_highlighted_list(old_log_lines, new_log_lines, last_applied_highlight_string, True)
-                highlight_input_active = False
-                append = False
+        if last_applied_highlight_string != highlight_string:
+            # change timer expired for new highlight string
+            last_applied_highlight_string = highlight_string
+            highlighted_list = _assemble_changed_highlighted_list(old_log_lines, new_log_lines, last_applied_highlight_string, True)
+            append = False
         elif new_log_lines != []:
             # old highlight string, new lines added, highlight them
             highlighted_list = _assemble_changed_highlighted_list([], new_log_lines, last_applied_highlight_string, False)
             append = True
         else:
             # old highlight string, no change
-            highlighted_list = []
-            append = True
-            if highlight_input_active and (current_time - last_highlight_change_time > FILTER_APPLICATION_WAIT_TIME_s):
-                highlight_input_active = False
+            pass
 
-        return highlighted_list, append, highlight_input_active
+        return highlighted_list, append
 
-    def process_log_text(new_text):
+    def process_log_text(new_text = "", filter_string = None, highlight_string = None, pause_string = None):
         """
         Process new log text and return update info
         """
-        global old_raw_log_lines, old_filtered_lines, last_log_gui_filter_update_date, filter_input_active, highlight_input_active
+        global old_raw_log_lines, old_filtered_lines, last_log_gui_filter_update_date
+        nonlocal active_pause_string, active_filter_string, active_highlight_string
+
+        # parse input parameter
+        if filter_string != None:
+            active_filter_string = filter_string
+        if highlight_string != None:
+            active_highlight_string = highlight_string
+        if pause_string != None:
+            active_pause_string = pause_string
 
         # add new text lines to raw log
         new_lines = [(line, False) for line in new_text.split('\n') if line]
 
         # handle pausing
-        current_pause_state = log_view.is_log_paused()
+        current_pause_state = True if active_pause_string == "Unpause" else False
         old_lines_after_pausing, new_lines_after_pausing = _handle_pausing(old_raw_log_lines, new_lines, current_pause_state)
 
         # filter text with filter string
-        filter_string = log_view.get_filter_string()
-        new_filtered_lines, old_filtered_lines, filter_reprint, filter_input_active = _handle_filtering(old_lines_after_pausing, new_lines_after_pausing, old_filtered_lines, filter_string)
+        new_filtered_lines, old_filtered_lines, filter_reprint = _handle_filtering(old_lines_after_pausing, new_lines_after_pausing, old_filtered_lines, active_filter_string)
 
         # add highlighting information with highlight string
-        highlight_string = log_view.get_highlight_string()
-        highlighted_text_list, append, highlight_input_active = _highlight_text(highlight_string, old_filtered_lines, new_filtered_lines)
+        highlighted_text_list, append = _highlight_text(active_highlight_string, old_filtered_lines, new_filtered_lines)
 
         # determine final append
         append = False if filter_reprint == True else append
@@ -243,12 +223,6 @@ def create_log_processor_and_displayer(log_view):
         "process": process_log_text,
         "clear": clear_log
     }
-
-def is_filter_input_active():
-    return filter_input_active
-
-def is_highlight_input_active():
-    return highlight_input_active
 
 def get_last_log_gui_filter_update_date():
     return last_log_gui_filter_update_date

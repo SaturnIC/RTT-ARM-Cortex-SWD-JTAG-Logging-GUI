@@ -15,11 +15,18 @@ FILTER_APPLICATION_WAIT_TIME_s = 2
 
 class RTTViewer:
     def __init__(self, demo=False):
+        self.filter_input_string = ""
+        self.highlight_input_string = ""
+
+        # Create queues
+        self.log_processing_input_queue = queue.Queue()
+        self.display_output_queue = queue.Queue()
+
         # Initialize RTT Handler
         if demo:
-            self._rtt_handler = DemoRTTHandler()
+            self._rtt_handler = DemoRTTHandler(self.log_processing_input_queue)
         else:
-            self._rtt_handler = RTTHandler()
+            self._rtt_handler = RTTHandler(self.log_processing_input_queue)
         self.supported_mcu_list = self._rtt_handler.get_supported_mcus()
         # GUI setup
         sg.theme('Dark Gray 13')
@@ -81,8 +88,6 @@ class RTTViewer:
 
         # Create log handler
         self.log_handler = log_controller.create_log_processor_and_displayer(self.log_view)
-        self.display_queue = queue.Queue()
-        self.update_log_text = lambda text: self.display_queue.put(self.log_handler["process"](text))
 
         self.demo = demo
 
@@ -97,21 +102,32 @@ class RTTViewer:
     def _log_processing_thread(self):
         while True:
             try:
-                line = self._rtt_handler.log_queue.get(timeout=0.1)
-                update_info = self.log_handler["process"](line)
-                self.display_queue.put(update_info)
+                # Get element from input queue
+                log_input = self.log_processing_input_queue.get(timeout=0.1)
+
+                # Parse log processing item
+                line = log_input["line"] if "line" in log_input else ""
+                filter_string = log_input["filter_string"] if "filter_string" in log_input else None
+                highlight_string = log_input["highlight_string"] if "highlight_string" in log_input else None
+                pause_string = log_input["pause_string"] if "pause_string" in log_input else None
+
+                # Invoke processing
+                update_info = self.log_handler["process"](line, filter_string, highlight_string, pause_string)
+
+                # Add processing result to output queue
+                self.display_output_queue.put(update_info)
             except queue.Empty:
                 pass
             time.sleep(0.01)
 
-    def _process_display_queue(self):
+    def _process_display_output_queue(self):
         count = 0
         max_per_call = 20  # Limit to 100 lines per GUI update to prevent overload
         highlighted_log_lines = []
         update_info = []
-        while not self.display_queue.empty() and count < max_per_call:
+        while not self.display_output_queue.empty() and count < max_per_call:
             try:
-                update_info = self.display_queue.get_nowait()
+                update_info = self.display_output_queue.get_nowait()
                 highlighted_log_lines += update_info['highlighted_text_list']
                 count += 1
                 if update_info["append"] == False:
@@ -123,11 +139,11 @@ class RTTViewer:
             #highlighted_log_lines.append((f"count on print: {count}", False))
             update_info['highlighted_text_list'] = highlighted_log_lines
             self.log_view.display_log_update(update_info)
-        else:
-            # call log gui update at least once per second
-            if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
-                update_info = self.log_handler["process"]("")
-                self.log_view.display_log_update(update_info)
+        #else:
+        #    # call log gui update at least once per second
+        #    if (datetime.now() - log_controller.get_last_log_gui_filter_update_date()).total_seconds() > log_controller.GUI_MINIMUM_REFRESH_INTERVAL_s:
+        #        update_info = self.log_handler["process"]("")
+        #        self.log_view.display_log_update(update_info)
 
     def _filter_mcu_list(self, filter_string):
         if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
@@ -150,7 +166,7 @@ class RTTViewer:
             try:
                 selected_mcu = self._window['-MCU-'].get()
                 selected_interface = self._window['-INTERFACE-'].get()
-                if self._rtt_handler.connect(selected_mcu, interface=selected_interface, print_function=self.update_log_text):
+                if self._rtt_handler.connect(selected_mcu, interface=selected_interface):
                     self._update_gui_status(True)
             except Exception as e:
                 sg.popup_error(str(e))
@@ -160,23 +176,21 @@ class RTTViewer:
         if event == '-CLEAR-':
             self.log_handler['clear']()
             log_controller.clear_log_data()
-        if event in ('-FILTER-', '-HIGHLIGHT-'):
+        if event == '-FILTER-':
+            self.filter_input_string = values['-FILTER-']
+        if event == '-HIGHLIGHT-':
             # Update the log display when filter or highlight changes
-            update_info = self.log_handler["process"]("")
-            self.display_queue.put(update_info)
+            self.highlight_input_string = values['-HIGHLIGHT-']
         if event == '-PAUSE-':
             # Toggle pause state
             current_text = self._window['-PAUSE-'].GetText()
             new_text = 'Unpause' if current_text == 'Pause' else 'Pause'
             self._window['-PAUSE-'].update(new_text)
             # Trigger update to show accumulated messages if unpaused
-            update_info = self.log_handler["process"]("")
-            self.display_queue.put(update_info)
+            self.log_processing_input_queue.put({"pause": new_text})
         return retVal
 
     def run(self):
-        self.update_log_text('')
-
         # Start log processing thread
         processing_thread = threading.Thread(target=self._log_processing_thread, daemon=True)
         processing_thread.start()
@@ -196,10 +210,12 @@ class RTTViewer:
                     break
 
                 # Handle widget highlighting
-                self.log_view.handle_widget_highlighting(log_controller.is_filter_input_active(), log_controller.is_highlight_input_active())
+                input_update = self.log_view.handle_widget_highlighting(self.filter_input_string, self.highlight_input_string)
+                if input_update != {}:
+                    self.log_processing_input_queue.put(input_update)
 
                 # Update log
-                self._process_display_queue()
+                self._process_display_output_queue()
         finally:
             self._rtt_handler.disconnect()
             self._window.close()
