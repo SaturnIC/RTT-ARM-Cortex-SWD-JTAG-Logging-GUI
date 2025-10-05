@@ -1,7 +1,8 @@
-# ARM Cortex SWD RTT GUI
+# ARM Cortex SWD/JTAG Logging GUI
+
 ![RTT GUI Screenshot](./docs/arm_cortex_rtt_gui_wt.png)
 
-**Python GUI for ARM Cortex Debug Logging via SWD/JTAG**
+## Overview
 
 This project provides a Python-based GUI to display, filter and highlight real-time ARM Cortex microcontroller log messages
 received via SEGGER's Real-Time Transfer (RTT) debug protocol.
@@ -22,7 +23,7 @@ it will be possible, without too much effort, to implement many other new debug 
 data plotting and analysis - also capabilities that are not available in SEGGER's RTT applications.
 
 ## Table of Contents
-- [ARM Cortex SWD RTT GUI](#arm-cortex-swd-rtt-gui)
+- [ARM Cortex SWD/JTAG Logging GUI](#arm-cortex-swd/jtag-logging-gui)
   - [Key Features](#key-features)
   - [Prerequisites](#prerequisites)
     - [Host Software](#host-software)
