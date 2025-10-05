@@ -1,20 +1,25 @@
 # ARM Cortex SWD RTT GUI
 ![RTT GUI Screenshot](./docs/arm_cortex_rtt_gui_wt.png)
 
-**Open-source Python GUI for ARM Cortex SWD Debug Channel**
+**Python GUI for ARM Cortex Debug Logging via SWD/JTAG**
 
-This project provides a Python-based GUI interface for SEGGER's Real-Time Transfer (RTT) debug protocol, enabling direct communication with ARM Cortex-based microcontrollers via J-Link debug probes. It replaces traditional debug channels (like UART) with the efficient SWD/SWO interface without requiring intermediary applications.
+This project provides a Python-based GUI to display, filter and highlight real-time ARM Cortex microcontroller log messages
+received via SEGGER's Real-Time Transfer (RTT) debug protocol.
 
-As one of the few projects that directly interfaces with J-Link using Segger's Python wrapper (`pylink`) to receive RTT messages, it displays real-time logs from embedded targets with filtering and highlighting capabilities. Since messages are processed in Python, this foundation can be extended to support advanced features like data plotting and analysis - capabilities not available in SEGGER's standard RTT applications.
+This debug protocol provides direct communication with ARM Cortex-based microcontrollers via J-Link debug probes.
+RTT removes the need for additional debug channels (like UART) by using the ARM Cortex SWD/JTAG interface.
+Unlike the slow and clunky UART debug channel the SWD, JTAG interface provides lean and mean debugging for ARM MCUs.
 
-This project serves as a wrapper for SEGGER Real-Time Transfer (RTT) debug channel,
-demonstrating how to replace clunky classical MCU debug channels like UART with lean and mean SWD, SWO
-for ARM MCUs
-without the need for any intermediary applications.
+This projects interfaces directly with J-Link probe drivers using Segger's Python wrapper `pylink`
+to receive RTT messages. It does not require any other intermediary software.
 
-This project can be used as a foundation to create a custom debug communication tool for ARM MCU development.
+The official documentation and examples for pylink, SEGGER's Python wrapper,
+are severely lacking when it comes to using the RTT channel,
+so this project may also serve as a practical guide for leveraging `pylink` for RTT communication.
 
-The documentation and examples in pylink, SEGGER's Python wrapper, are severely lacking when it comes to using the RTT channel, so this project may also serve as a guide to help leverage pylink for RTT.
+Since messages are processed directly in Python,
+it will be possible, without too much effort, to implement many other new debug features like
+data plotting and analysis - also capabilities that are not available in SEGGER's RTT applications.
 
 ## Table of Contents
 - [ARM Cortex SWD RTT GUI](#arm-cortex-swd-rtt-gui)
