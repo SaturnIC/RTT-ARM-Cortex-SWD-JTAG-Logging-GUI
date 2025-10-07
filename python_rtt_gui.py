@@ -51,7 +51,7 @@ class RTTViewer:
                 ], pad=((20,10),(10,10)))
             ],
             [sg.Frame('Log', [
-                [sg.Output(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
+                [sg.Multiline(size=(80, 20), key='-LOG-', expand_x=True, expand_y=True, font=('Consolas', 10))],
                 [sg.Column([
                     [sg.Text('Filter:'),
                      sg.Input(key='-FILTER-', size=(20, 1), enable_events=True),

@@ -54,12 +54,12 @@ class DemoRTTHandler(RTTHandlerInterface):
         Generate demo messages at regular intervals.
         """
         demo_messages = [
-            "1 [INFO] System initialized",
-            "2 [DEBUG] Connecting to peripherals",
-            "3 [WARN] Low battery detected",
-            "4 [ERROR] Failed to read sensor data",
-            "5 [INFO] Processing data",
-            "6 [DEBUG] Update complete",
+            "1 [INFO] System initialized. lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor",
+            "2 [DEBUG] Connecting to peripherals. lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor",
+            "3 [WARN] Low battery detected. lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor",
+            "4 [ERROR] Failed to read sensor data. lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor",
+            "5 [INFO] Processing data. lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor",
+            "6 [DEBUG] Update complete. lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor, lorem ipsum dolor",
         ]
         while not self._stop_demo.is_set():
             for msg in demo_messages:
@@ -67,7 +67,7 @@ class DemoRTTHandler(RTTHandlerInterface):
                 if self._stop_demo.wait(timeout=0.03):
                     break
             # Wait a bit between message cycles
-            if self._stop_demo.wait(timeout=0.03):
+            if self._stop_demo.wait(timeout=0.01):
                 break
 
     def get_supported_mcus(self):
