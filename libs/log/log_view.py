@@ -23,10 +23,13 @@ class LogView:
         # input fields
         self.last_filter_change_time = 0
         self.last_highlight_change_time = 0
+        self.last_mcu_change_time = 0
         self.last_filter_input = ""
         self.last_highlight_input = ""
+        self.last_mcu_input = ""
         self.active_highlight_string = ""
         self.active_filter_string = ""
+        self.active_mcu_string = ""
         # configure tags
         self.log_widget.Widget.tag_config("highlight", foreground="LightGreen")
         # log state
@@ -80,7 +83,7 @@ class LogView:
         else:
             self.set_default_color_for_input_widget(input_label)
     
-    def handle_widget_highlighting(self, filter_input, highlight_input):
+    def handle_widget_highlighting(self, filter_input, highlight_input, mcu_input):
         retVal = {}
         current_time = time.time()
 
@@ -93,6 +96,10 @@ class LogView:
             self.last_highlight_input = highlight_input
             self.last_highlight_change_time = current_time
             self.handle_coloring_of_input_widget(True, "-HIGHLIGHT-")
+        if self.last_mcu_input != mcu_input:
+            self.last_mcu_input = mcu_input
+            self.last_mcu_change_time = current_time
+            self.handle_coloring_of_input_widget(True, "-MCU-")
 
         # Handle application of changed input stings
         ## highlight input widget
@@ -109,6 +116,13 @@ class LogView:
             self.active_highlight_string = self.last_highlight_input
             self.handle_coloring_of_input_widget(False, "-HIGHLIGHT-")
             retVal["highlight_string"] = self.active_highlight_string
+        ## highlight mcu widget
+        if (current_time - self.last_mcu_change_time > FILTER_APPLICATION_WAIT_TIME_s) \
+           and (self.active_mcu_string != self.last_mcu_input):
+            # change timer expired for new mcu string
+            self.active_mcu_string = self.last_mcu_input
+            self.handle_coloring_of_input_widget(False, "-MCU-")
+            retVal["mcu_string"] = self.active_mcu_string
 
         return retVal
 

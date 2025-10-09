@@ -215,7 +215,7 @@ class RTTViewer:
                     break
 
                 # Handle widget highlighting
-                input_update = self.log_view.handle_widget_highlighting(self.filter_input_string, self.highlight_input_string)
+                input_update = self.log_view.handle_widget_highlighting(self.filter_input_string, self.highlight_input_string, self.mcu_filter_string)
                 if input_update != {}:
                     self.log_processing_input_queue.put(input_update)
 
