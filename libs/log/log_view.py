@@ -28,26 +28,40 @@ class LogView:
         self.active_highlight_string = ""
         self.active_filter_string = ""
         # configure tags
-        self.log_widget.Widget.tag_configure("highlight", background="LightGreen")
-        self.log_widget.Widget.tag_configure("default", background="")
-
-    def insert_colored_text(self, text, color):
-        self.log_widget.print(text)
-        #self.log_widget.Widget.tag_configure(color, foreground=color)
-        #self.log_widget.Widget.insert(tk.END, text, color)
-        #self.log_widget.Widget.see(tk.END)
+        self.log_widget.Widget.tag_config("highlight", foreground="LightGreen")
+        # log state
+        self.current_line_no = 1
 
     def clear_log(self):
         self.update_log("", append=False)
+        self.current_line_no = 1
 
     def insert_highlighted_text(self, highlighted_text_list):
-        # delete log if needed
-        for line_text, highlighted in highlighted_text_list:
-           #line_text += '\n'
-           if highlighted:
-               self.insert_colored_text(line_text, COLOR_HIGHLIGHT)
-           else:
-               self.insert_colored_text(line_text, self.default_text_color)
+        if not highlighted_text_list:
+            return
+
+        # Get start position before insertion
+        start_index = "0.0" #self.log_widget.Widget.index(tk.END)
+
+        # Build single string and tag ranges
+        full_text = ""
+        tag_ranges = []
+        for text, highlighted in highlighted_text_list:
+            line_text = text + '\n'
+            full_text += line_text
+            if highlighted:
+                start = f"{self.current_line_no}.0"
+                end = f"{self.current_line_no}.0 lineend" #f"{start}+{len(text)}c"
+                tag_ranges.append((start, end))
+            self.current_line_no += 1
+
+        # Bulk insert and apply tags
+        self.log_widget.Widget.insert(tk.END, full_text)
+        for start, end in tag_ranges:
+            self.log_widget.Widget.tag_add("highlight", start, end)
+
+        # Scroll only once
+        self.log_widget.Widget.see(tk.END)
 
     def update_log(self, text, append):
         self.log_widget.update(text, append=append)
