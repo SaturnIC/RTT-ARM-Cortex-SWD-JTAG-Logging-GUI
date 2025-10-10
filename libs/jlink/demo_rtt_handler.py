@@ -50,6 +50,22 @@ class DemoRTTHandler(RTTHandlerInterface):
             self._demo_thread.start()
 
     def _demo_loop(self):
+        demo_messages = []
+        try:
+            with open('debug/ExampleLog.txt', 'r') as f:
+                demo_messages = [line.rstrip('\n') for line in f]
+        except FileNotFoundError:
+            demo_messages = ["[ERROR] ExampleLogs.txt not found. Using default messages."]
+
+        while not self._stop_demo.is_set():
+            for msg in demo_messages:
+                self._log_queue.put({"line": msg + '\n'})
+                if self._stop_demo.wait(timeout=0.01):  # Match original 0.03s interval
+                    break
+            #if self._stop_demo.wait(timeout=0.001):  # Match original 0.01s cycle pause
+            #    break
+
+    def _simple_demo_loop(self):
         """
         Generate demo messages at regular intervals.
         """

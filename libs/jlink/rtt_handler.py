@@ -60,32 +60,32 @@ class RTTHandler(RTTHandlerInterface):
             self._jlink.close()
             self._connected = False
 
+    def _insert_lines_in_log_processing_queue(self, lines):
+        for line in lines:
+            if line:  # Skip empty lines
+                self._log_queue.put({"line" : line  + '\n'})
+
     def _read_rtt(self):
         """
         Continuously read RTT data, parse into lines, and put each line into the log queue.
         """
         while self._connected:
             try:
-                data = self._jlink.rtt_read(0, 256)
+                data = self._jlink.rtt_read(0, 4096)
                 if data:
                     byte_string = bytes(data)
                     latin_string = byte_string[2:].decode('latin-1') # first two bytes used in header?
-                    if latin_string.endswith('\n'):
+                    full_string = self._buffer + latin_string
+                    if full_string.endswith('\n'):
                         # Complete data, process all lines
-                        full_string = self._buffer + latin_string
                         lines = full_string.split('\n')
-                        for line in lines:
-                            if line:  # Skip empty lines
-                                self._log_queue.put({"line" : line  + '\n'})
+                        self._insert_lines_in_log_processing_queue(lines)
                         self._buffer = ""
                     else:
                         # Incomplete data, accumulate in buffer
-                        full_string = self._buffer + latin_string
                         lines = full_string.split('\n')
-                        for line in lines[:-1]:
-                            if line:  # Skip empty lines
-                                self._log_queue.put({"line" : line  + '\n'})
-                        self._buffer += lines[-1]
+                        self._insert_lines_in_log_processing_queue(lines[:-1])
+                        self._buffer = lines[-1]
 
             except pylink.JLinkException:
                 break
