@@ -72,6 +72,7 @@ class RTTViewer:
         self._update_gui_status(False)
 
         self.mcu_filter_string = ''
+        self.last_mcu_filter_string = ""
         self.mcu_list_last_update_time = time.time()
 
         # Bind the <KeyRelease> event to the Combo widget
@@ -201,7 +202,7 @@ class RTTViewer:
                 time.sleep(0.05)
 
                 # Check MCU filter
-                if self.mcu_filter_string != "":
+                if self.mcu_filter_string != "" and self.last_mcu_filter_string != self.mcu_filter_string:
                     self._filter_mcu_list(self.mcu_filter_string)
 
                 # Check events
