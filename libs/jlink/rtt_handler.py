@@ -80,7 +80,13 @@ class RTTHandler(RTTHandlerInterface):
                         self._buffer = ""
                     else:
                         # Incomplete data, accumulate in buffer
-                        self._buffer += latin_string
+                        full_string = self._buffer + latin_string
+                        lines = full_string.split('\n')
+                        for line in lines[:-1]:
+                            if line:  # Skip empty lines
+                                self._log_queue.put({"line" : line  + '\n'})
+                        self._buffer += lines[-1]
+
             except pylink.JLinkException:
                 break
             time.sleep(0.1)
