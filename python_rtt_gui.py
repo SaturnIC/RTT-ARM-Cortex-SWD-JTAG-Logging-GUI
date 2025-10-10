@@ -17,6 +17,7 @@ class RTTViewer:
     def __init__(self, demo=False):
         self.filter_input_string = ""
         self.highlight_input_string = ""
+        self.last_processed_time = time.time()
 
         # Create queues
         self.log_processing_input_queue = queue.Queue()
@@ -199,7 +200,7 @@ class RTTViewer:
         try:
             # GUI event loop
             while True:
-                time.sleep(0.05)
+                #time.sleep(0.1)
 
                 # Check MCU filter
                 if self.mcu_filter_string != "" and self.last_mcu_filter_string != self.mcu_filter_string:
@@ -216,7 +217,11 @@ class RTTViewer:
                     self.log_processing_input_queue.put(input_update)
 
                 # Update log
-                self._process_display_output_queue()
+                current_time = time.time()
+                if current_time - self.last_processed_time >= 0.5:
+                    self._process_display_output_queue()
+                    self.last_processed_time = current_time
+
         finally:
             self._rtt_handler.disconnect()
             self._window.close()
