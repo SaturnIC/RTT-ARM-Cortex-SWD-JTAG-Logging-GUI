@@ -12,12 +12,15 @@ from libs.log.log_view import LogView
 
 # constants
 FILTER_APPLICATION_WAIT_TIME_s = 2
+LOG_UPDATE_TIME_INTERVAL_ms = 200
+
 
 class RTTViewer:
     def __init__(self, demo=False):
         self.filter_input_string = ""
         self.highlight_input_string = ""
         self.last_processed_time = time.time()
+        self.log_update_time_interval_s = LOG_UPDATE_TIME_INTERVAL_ms / 1000.0
 
         # Create queues
         self.log_processing_input_queue = queue.Queue()
@@ -218,7 +221,7 @@ class RTTViewer:
 
                 # Update log
                 current_time = time.time()
-                if current_time - self.last_processed_time >= 0.5:
+                if current_time - self.last_processed_time >= self.log_update_time_interval_s:
                     self._process_display_output_queue()
                     self.last_processed_time = current_time
 
