@@ -11,7 +11,6 @@ from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 from libs.log.log_view import LogView
 
 # constants
-FILTER_APPLICATION_WAIT_TIME_s = 2
 LOG_UPDATE_TIME_INTERVAL_ms = 200
 
 
@@ -151,10 +150,8 @@ class RTTViewer:
         #        self.log_view.display_log_update(update_info)
 
     def _filter_mcu_list(self, filter_string):
-        if (time.time() - self.mcu_list_last_update_time) > FILTER_APPLICATION_WAIT_TIME_s:
             input_text = filter_string.upper()
-            filtered = [mcu for mcu in self.supported_mcu_list
-                        if input_text in mcu]
+            filtered = [mcu for mcu in self.supported_mcu_list if input_text in mcu]
             self._window['-MCU-'].update(values=filtered)
 
     def handle_events(self, event, values):
@@ -205,10 +202,6 @@ class RTTViewer:
             while True:
                 #time.sleep(0.1)
 
-                # Check MCU filter
-                if self.mcu_filter_string != "" and self.last_mcu_filter_string != self.mcu_filter_string:
-                    self._filter_mcu_list(self.mcu_filter_string)
-
                 # Check events
                 event, values = self._window.read(timeout=100)
                 if self.handle_events(event, values) == False:
@@ -216,6 +209,13 @@ class RTTViewer:
 
                 # Handle widget highlighting
                 input_update = self.log_view.handle_widget_highlighting(self.filter_input_string, self.highlight_input_string, self.mcu_filter_string)
+                if "mcu_string" in input_update:
+                    # Check MCU filter
+                    applied_mcu_filter_string = input_update["mcu_string"]
+                    if applied_mcu_filter_string:
+                        self._filter_mcu_list(applied_mcu_filter_string)
+
+                # Handle log processing on input changes
                 if input_update != {}:
                     self.log_processing_input_queue.put(input_update)
 

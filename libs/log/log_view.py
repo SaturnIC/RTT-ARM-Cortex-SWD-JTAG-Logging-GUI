@@ -3,7 +3,7 @@ import tkinter as tk
 import FreeSimpleGUI as sg
 
 # Constants
-FILTER_APPLICATION_WAIT_TIME_s = 0.5
+FILTER_APPLICATION_WAIT_TIME_s = 1
 COLOR_BLUE = 'blue'
 COLOR_HIGHLIGHT = 'LightGreen'
 COLOR_BLACK = 'black'
