@@ -13,6 +13,7 @@ class RTTHandler(RTTHandlerInterface):
         self._connected = False
         self._rtt_thread = None
         self._buffer = ""
+        self._ansi_pattern = re.compile(rb'\x1b\[[0-9;]*[a-zA-Z]')
 
     def connect(self, mcu_name, interface='SWD', block_address=None):
         """
@@ -71,10 +72,7 @@ class RTTHandler(RTTHandlerInterface):
         Returns:
             bytes: Cleaned byte string without ANSI sequences.
         """
-        # Pattern for common CSI sequences (Control Sequence Introducer)
-        pattern = rb'\x1b\[[0-9;]*[a-zA-Z]'  # More precise: matches digits/semicolons ended by a letter (e.g., m, K)
-        # Alternative broader pattern: rb'\x1b\[.*?[mGK]'
-        cleaned = re.sub(pattern, b'', byte_str)
+        cleaned = self._ansi_pattern.sub(b'', byte_str)
         return cleaned
 
     def _insert_lines_in_log_processing_queue(self, lines):
