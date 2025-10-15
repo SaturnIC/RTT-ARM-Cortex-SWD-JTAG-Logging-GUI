@@ -1,6 +1,7 @@
 import pylink
 import threading
 import queue
+import re
 import time
 from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 
@@ -60,6 +61,22 @@ class RTTHandler(RTTHandlerInterface):
             self._jlink.close()
             self._connected = False
 
+    def remove_ansi_bytes(self, byte_str: bytes) -> bytes:
+        """
+        Remove ANSI escape sequences from a byte string.
+
+        Args:
+            byte_str (bytes): Input byte string containing ANSI codes.
+
+        Returns:
+            bytes: Cleaned byte string without ANSI sequences.
+        """
+        # Pattern for common CSI sequences (Control Sequence Introducer)
+        pattern = rb'\x1b\[[0-9;]*[a-zA-Z]'  # More precise: matches digits/semicolons ended by a letter (e.g., m, K)
+        # Alternative broader pattern: rb'\x1b\[.*?[mGK]'
+        cleaned = re.sub(pattern, b'', byte_str)
+        return cleaned
+
     def _insert_lines_in_log_processing_queue(self, lines):
         for line in lines:
             if line:  # Skip empty lines
@@ -74,7 +91,8 @@ class RTTHandler(RTTHandlerInterface):
                 data = self._jlink.rtt_read(0, 4096)
                 if data:
                     byte_string = bytes(data)
-                    latin_string = byte_string[2:].decode('latin-1') # first two bytes used in header?
+                    byte_string = self.remove_ansi_bytes(byte_string)
+                    latin_string = byte_string[2:].decode('utf-8', errors='ignore') # first two bytes used in header?
                     full_string = self._buffer + latin_string
                     if full_string.endswith('\n'):
                         # Complete data, process all lines

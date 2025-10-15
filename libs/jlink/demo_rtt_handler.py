@@ -80,10 +80,10 @@ class DemoRTTHandler(RTTHandlerInterface):
         while not self._stop_demo.is_set():
             for msg in demo_messages:
                 self._log_queue.put({"line" : msg + '\n'})
-                if self._stop_demo.wait(timeout=0.03):
+                if self._stop_demo.wait(timeout=0.001):
                     break
             # Wait a bit between message cycles
-            if self._stop_demo.wait(timeout=0.01):
+            if self._stop_demo.wait(timeout=0.03):
                 break
 
     def get_supported_mcus(self):
