@@ -1,4 +1,4 @@
-# ARM Cortex RTT SWD/JTAG Logging GUI
+# RTT ARM Cortex SWD/JTAG Logging GUI
 
 ![RTT GUI Screenshot](./docs/arm_cortex_rtt_gui_new_wt.png)
 
@@ -75,8 +75,8 @@ void main() {
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/SaturnIC/JLink-RTT-Python-GUI.git
-   cd python-rtt-gui
+   https://github.com/SaturnIC/RTT-ARM-Cortex-GUI.git
+   cd RTT-ARM-Cortex-GUI
    ```
 2. Install the required packages:
    ```bash
@@ -92,7 +92,7 @@ void main() {
 ### Start Logging
 1. Launch the application:
    ```bash
-   python python_rtt_gui.py
+   python rtt_python_gui.py
    ```
 
 2. Select your target MCU from the dropdown list.
