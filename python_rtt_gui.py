@@ -11,7 +11,7 @@ from libs.jlink.rtt_handler_interface import RTTHandlerInterface
 from libs.log.log_view import LogView
 
 # constants
-LOG_UPDATE_TIME_INTERVAL_ms = 200
+LOG_UPDATE_TIME_INTERVAL_ms = 100
 
 
 class RTTViewer:
