@@ -1,6 +1,6 @@
-# ARM Cortex SWD/JTAG Logging GUI
+# ARM Cortex RTT SWD/JTAG Logging GUI
 
-![RTT GUI Screenshot](./docs/arm_cortex_rtt_gui_wt.png)
+![RTT GUI Screenshot](./docs/arm_cortex_rtt_gui_new_wt.png)
 
 ## Overview
 
@@ -23,7 +23,7 @@ it will be possible, without too much effort, to implement many other new debug 
 data plotting and analysis - also capabilities that are not available in SEGGER's RTT applications.
 
 ## Table of Contents
-- [ARM Cortex SWD/JTAG Logging GUI](#arm-cortex-swd/jtag-logging-gui)
+- [ARM Cortex RTT SWD/JTAG Logging GUI](#arm-cortex-swd/jtag-logging-gui)
   - [Key Features](#key-features)
   - [Prerequisites](#prerequisites)
     - [Host Software](#host-software)
@@ -57,7 +57,10 @@ data plotting and analysis - also capabilities that are not available in SEGGER'
   - pylink (Segger's J-Link Python wrapper)
 
 ### Embedded Target Setup
-Include RTT in your firmware using the source code from `JLink/Samples/RTT` (included in J-Link installation):
+Include the SEGGER RTT library files in your embedded app.
+See: https://www.segger.com/products/debug-probes/j-link/technology/about-real-time-transfer/
+
+Include RTT in your firmware by using the source code from `JLink/Samples/RTT` included in J-Link installation.
 ```c
 #include "SEGGER_RTT.h"
 
@@ -111,11 +114,9 @@ Use the "Clear" button to reset the log display.
 
 
 ## License
-
 This project is licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for more details.
 
 ## Contact
-
 For questions, issues, or contributions, please contact the maintainer
 
 ---

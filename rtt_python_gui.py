@@ -230,7 +230,7 @@ class RTTViewer:
             self._window.close()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Python RTT GUI')
+    parser = argparse.ArgumentParser(description='RTT GUI')
     parser.add_argument('--demo-messages', action='store_true', help='Enable demo mode with sample log messages')
     args = parser.parse_args()
 
