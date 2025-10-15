@@ -1,5 +1,5 @@
 """
-Main test suite for Python RTT GUI functionality
+Main test suite for RTT GUI functionality
 Tests the core functionality including demo mode, normal mode, and MCU selection
 """
 
@@ -10,7 +10,7 @@ import pytest
 # Add the libs directory to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from python_rtt_gui import RTTViewer
+from rtt_python_gui import RTTViewer
 from libs.jlink.rtt_handler import RTTHandler
 from libs.jlink.demo_rtt_handler import DemoRTTHandler
 from libs.jlink.rtt_handler_interface import RTTHandlerInterface
@@ -21,8 +21,8 @@ class TestRTTViewer:
     
     def test_interface_implementation(self):
         """Test that both handlers implement the interface correctly"""
-        demo_handler = DemoRTTHandler()
-        rtt_handler = RTTHandler()
+        demo_handler = DemoRTTHandler(None)
+        rtt_handler = RTTHandler(None)
         
         # Test that both handlers implement the interface
         assert isinstance(demo_handler, RTTHandlerInterface)
