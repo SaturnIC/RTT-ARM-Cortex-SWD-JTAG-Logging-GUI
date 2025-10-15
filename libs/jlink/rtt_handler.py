@@ -89,8 +89,9 @@ class RTTHandler(RTTHandlerInterface):
                 data = self._jlink.rtt_read(0, 4096)
                 if data:
                     byte_string = bytes(data)
-                    byte_string = self.remove_ansi_bytes(byte_string)
-                    latin_string = byte_string[2:].decode('utf-8', errors='ignore') # first two bytes used in header?
+                    ansi_clean_string = self.remove_ansi_bytes(byte_string)
+                    ff_clean_string = ansi_clean_string.replace(b'\n\xff0', b'\n').replace(b'\n\xff', b'\n')
+                    latin_string = ff_clean_string[2:].decode('utf-8', errors='ignore') # first two bytes used in header?
                     full_string = self._buffer + latin_string
                     if full_string.endswith('\n'):
                         # Complete data, process all lines
