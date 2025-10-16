@@ -9,18 +9,19 @@ received via SEGGER's Real-Time Transfer (RTT) debug protocol.
 
 This debug protocol provides direct communication with ARM Cortex-based microcontrollers via J-Link debug probes.
 RTT removes the need for additional debug channels (like UART) by using the ARM Cortex SWD/JTAG interface.
-Unlike the slow and clunky UART debug channel the SWD, JTAG interface provides lean and mean debugging for ARM MCUs.
+Unlike the slower and clunkier UART debug channel the SWD, JTAG interface provides lean and mean RTT debug messages for ARM MCUs.
 
-This project interfaces directly with J-Link probe drivers using Segger's Python wrapper `pylink`
-to receive RTT messages. It does not require any other intermediary software.
+This project interfaces directly with the J-Link probe drivers,
+using Segger's Python wrapper `pylink` to receive RTT messages.
+It does not require any other intermediary software.
 
 The official documentation and examples for pylink, SEGGER's Python wrapper,
-are severely lacking when it comes to using the RTT channel,
+are somewhat lacking when it comes to using the RTT channel,
 so this project may also serve as a practical guide for leveraging `pylink` for RTT communication.
 
 Since messages are processed directly in Python,
-it will be possible, without too much effort, to implement many other new debug features like
-data plotting and analysis - also capabilities that are not available in SEGGER's RTT applications.
+it should be straightforward, to extend the functionality of this GUI with other
+new debug features like data plotting and analysis - capabilities that are not yet available in SEGGER's RTT applications.
 
 ## Table of Contents
 - [ARM Cortex RTT SWD/JTAG Logging GUI](#arm-cortex-swd/jtag-logging-gui)
